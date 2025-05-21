@@ -22,6 +22,7 @@ public class InventoryService {
             System.out.println("1) Receive stock");
             System.out.println("2) Move to shelf");
             System.out.println("3) Back to Main menu");
+            System.out.println("\n");
             System.out.print("Choose an option: ");
 
             String opt = sc.nextLine().trim();

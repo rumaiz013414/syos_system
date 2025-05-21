@@ -19,6 +19,7 @@ public class Main {
             System.out.println("1) Billing");
             System.out.println("2) Inventory");
             System.out.println("3) Exit");
+            System.out.println("\n");
             System.out.print("Select option: ");
 
             String choice = sc.nextLine().trim();
