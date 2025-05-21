@@ -7,10 +7,13 @@ import com.syos.model.StockBatch;
 
 // closest expire date first.
 public class ClosestExpiryStrategy implements ShelfStrategy {
-    @Override
-    public StockBatch selectBatch(List<StockBatch> batches) {
-        return batches.stream()
-                      .min(Comparator.comparing(StockBatch::getExpiryDate))
-                      .orElse(null);
-    }
+	@Override
+	public StockBatch selectBatch(List<StockBatch> batches) {
+		return batches.stream().min(Comparator.comparing(StockBatch::getExpiryDate)).orElse(null);
+	}
+
+	@Override
+	public Comparator<StockBatch> getComparator() {
+		return Comparator.comparing(StockBatch::getPurchaseDate);
+	}
 }

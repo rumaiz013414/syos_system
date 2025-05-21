@@ -32,7 +32,7 @@ public class BillingService {
 
 		// Item entry loop
 		while (true) {
-			System.out.print("Enter product code (or 'done'): ");
+			System.out.print("Input product code (enter 'done' to proceed to payment): ");
 			String code = sc.nextLine().trim();
 			if ("done".equalsIgnoreCase(code))
 				break;
