@@ -20,11 +20,11 @@ public class BillingService {
 	private final BillItemFactory itemFactory = new BillItemFactory(new NoDiscountStrategy());
 	private final Scanner sc = new Scanner(System.in);
 	private final InventoryManager inventoryManager;
-
+	private static int stockThreshhold = 50;
 	// alert if stock is below 50
 	public BillingService() {
 		inventoryManager = InventoryManager.getInstance(new ClosestExpiryStrategy());
-		inventoryManager.addObserver(new StockAlertService(50));
+		inventoryManager.addObserver(new StockAlertService(stockThreshhold));
 	}
 
 	public void run() {
