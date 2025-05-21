@@ -11,4 +11,9 @@ public class FifoExpiryStrategy implements ShelfStrategy {
 	public StockBatch selectBatch(List<StockBatch> batches) {
 		return batches.stream().min(Comparator.comparing(StockBatch::getPurchaseDate)).orElse(null);
 	}
+
+	@Override
+	public Comparator<StockBatch> getComparator() {
+		return Comparator.comparing(StockBatch::getPurchaseDate);
+	}
 }
