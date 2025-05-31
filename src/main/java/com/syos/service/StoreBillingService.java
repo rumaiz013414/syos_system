@@ -11,7 +11,7 @@ import com.syos.model.Product;
 import com.syos.repository.BillingRepository;
 import com.syos.repository.ProductRepository;
 import com.syos.singleton.InventoryManager;
-import com.syos.strategy.ClosestExpiryStrategy;
+import com.syos.strategy.FifoExpiryStrategy;
 import com.syos.strategy.NoDiscountStrategy;
 
 public class StoreBillingService {
@@ -23,7 +23,8 @@ public class StoreBillingService {
 	private static int stockThreshhold = 50;
 	// alert if stock is below 50
 	public StoreBillingService() {
-		inventoryManager = InventoryManager.getInstance(new ClosestExpiryStrategy());
+//		inventoryManager = InventoryManager.getInstance(new ClosestExpiryStrategy());
+		inventoryManager = InventoryManager.getInstance(new FifoExpiryStrategy());
 		inventoryManager.addObserver(new StockAlertService(stockThreshhold));
 	}
 

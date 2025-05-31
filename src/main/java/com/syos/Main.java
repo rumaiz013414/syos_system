@@ -2,6 +2,7 @@ package com.syos;
 
 import com.syos.service.InventoryService;
 import com.syos.service.OnlineStoreService;
+//import com.syos.service.ReportService;
 import com.syos.service.StoreBillingService;
 
 import java.util.Scanner;
@@ -12,13 +13,15 @@ public class Main {
         StoreBillingService billingService = new StoreBillingService();
         InventoryService inventoryService = new InventoryService();
         OnlineStoreService onlineStoreService = new OnlineStoreService();
+//        ReportService reportService = new ReportService();
 
         while (true) {
             System.out.println("\n=== SYOS Main Menu ===");
             System.out.println(" 1) Store Billing");
             System.out.println(" 2) Online Store");
             System.out.println(" 3) Inventory");
-            System.out.println(" 4) Exit");
+            System.out.println(" 4) Reports");
+            System.out.println(" 5) Exit");
 
             System.out.print("\n Select an option : ");
 
@@ -27,6 +30,7 @@ public class Main {
                 case "1" -> billingService.run();
                 case "2" -> onlineStoreService.run();
                 case "3" -> inventoryService.run();
+//                case "4" -> reportService.run();
                 case "4" -> {
                     System.out.println("Goodbye!");
                     sc.close();

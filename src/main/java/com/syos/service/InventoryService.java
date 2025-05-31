@@ -4,15 +4,15 @@ import java.time.LocalDate;
 import java.util.Scanner;
 
 import com.syos.singleton.InventoryManager;
-import com.syos.strategy.ClosestExpiryStrategy;
+
+import com.syos.strategy.FifoExpiryStrategy;
 
 public class InventoryService {
     private final InventoryManager inventoryManager;
     private final Scanner sc = new Scanner(System.in);
 
     public InventoryService() {
-        // use closest‐expiry strategy and alert threshold of 50
-        this.inventoryManager = InventoryManager.getInstance(new ClosestExpiryStrategy());
+        this.inventoryManager = InventoryManager.getInstance(new FifoExpiryStrategy());
         inventoryManager.addObserver(new StockAlertService(50));
     }
 
@@ -21,7 +21,7 @@ public class InventoryService {
             System.out.println("\n=== Inventory Menu ===");
             System.out.println("1) Receive stock");
             System.out.println("2) Move to shelf");
-            System.out.println("3) Back to Main menu");
+            System.out.println("3) Exit");
             System.out.println("\n");
             System.out.print("Choose an option: ");
 
