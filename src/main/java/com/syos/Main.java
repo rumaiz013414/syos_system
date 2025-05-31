@@ -1,32 +1,33 @@
 package com.syos;
 
-import com.syos.service.BillingService;
 import com.syos.service.InventoryService;
+import com.syos.service.OnlineStoreService;
+import com.syos.service.StoreBillingService;
 
 import java.util.Scanner;
 
-/**
- * Main entry point: chooses between Billing and Inventory services.
- */
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        BillingService billingService = new BillingService();
+        StoreBillingService billingService = new StoreBillingService();
         InventoryService inventoryService = new InventoryService();
+        OnlineStoreService onlineStoreService = new OnlineStoreService();
 
         while (true) {
             System.out.println("\n=== SYOS Main Menu ===");
-            System.out.println("1) Billing");
-            System.out.println("2) Inventory");
-            System.out.println("3) Exit");
-            System.out.println("\n");
-            System.out.print("Select option: ");
+            System.out.println(" 1) Store Billing");
+            System.out.println(" 2) Online Store");
+            System.out.println(" 3) Inventory");
+            System.out.println(" 4) Exit");
+
+            System.out.print("\n Select an option : ");
 
             String choice = sc.nextLine().trim();
             switch (choice) {
                 case "1" -> billingService.run();
-                case "2" -> inventoryService.run();
-                case "3" -> {
+                case "2" -> onlineStoreService.run();
+                case "3" -> inventoryService.run();
+                case "4" -> {
                     System.out.println("Goodbye!");
                     sc.close();
                     return;

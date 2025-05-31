@@ -7,13 +7,13 @@ import com.syos.singleton.InventoryManager;
 import com.syos.strategy.ClosestExpiryStrategy;
 
 public class InventoryService {
-    private final InventoryManager inv;
+    private final InventoryManager inventoryManager;
     private final Scanner sc = new Scanner(System.in);
 
     public InventoryService() {
-        // Use closest‐expiry strategy and alert threshold of 50
-        this.inv = InventoryManager.getInstance(new ClosestExpiryStrategy());
-        inv.addObserver(new StockAlertService(50));
+        // use closest‐expiry strategy and alert threshold of 50
+        this.inventoryManager = InventoryManager.getInstance(new ClosestExpiryStrategy());
+        inventoryManager.addObserver(new StockAlertService(50));
     }
 
     public void run() {
@@ -40,10 +40,10 @@ public class InventoryService {
                     LocalDate pd = LocalDate.parse(sc.nextLine().trim());
                     System.out.print("Expiry date  (YYYY-MM-DD): ");
                     LocalDate ed = LocalDate.parse(sc.nextLine().trim());
-                    inv.receiveStock(code, pd, ed, qty);
+                    inventoryManager.receiveStock(code, pd, ed, qty);
                 }
                 case "2" -> {
-                    inv.moveToShelf(code, qty);
+                    inventoryManager.moveToShelf(code, qty);
                 }
                 default -> System.out.println("Invalid option.");
             }

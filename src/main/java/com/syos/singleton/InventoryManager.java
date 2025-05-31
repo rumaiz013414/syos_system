@@ -45,9 +45,8 @@ public class InventoryManager {
 		System.out.printf("Received batch: %s qty=%d exp=%s%n", productCode, quantity, expiryDate);
 	}
 
-	/**
-	 * Move up to qtyToMove from back‐store to shelf.
-	 */
+	//move up to qtyToMove from back‐store to shelf
+	 
 	public void moveToShelf(String productCode, int qtyToMove) {
 		int remainingToMove = qtyToMove;
 		List<StockBatch> batches = batchRepo.findByProduct(productCode);
