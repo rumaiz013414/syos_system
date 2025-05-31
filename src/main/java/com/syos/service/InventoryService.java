@@ -4,15 +4,15 @@ import java.time.LocalDate;
 import java.util.Scanner;
 
 import com.syos.singleton.InventoryManager;
+import com.syos.strategy.ExpiryAwareFifoStrategy;
 
-import com.syos.strategy.FifoExpiryStrategy;
 
 public class InventoryService {
     private final InventoryManager inventoryManager;
     private final Scanner sc = new Scanner(System.in);
 
     public InventoryService() {
-        this.inventoryManager = InventoryManager.getInstance(new FifoExpiryStrategy());
+        this.inventoryManager = InventoryManager.getInstance(new ExpiryAwareFifoStrategy());
         inventoryManager.addObserver(new StockAlertService(50));
     }
 

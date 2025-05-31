@@ -13,4 +13,5 @@ public interface ShelfStrategy {
      *         according to this strategy’s policy.
      */
     Comparator<StockBatch> getComparator();
+    
 }

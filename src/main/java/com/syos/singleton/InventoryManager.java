@@ -2,7 +2,6 @@ package com.syos.singleton;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import com.syos.model.StockBatch;
 import com.syos.observer.StockObserver;
@@ -10,15 +9,18 @@ import com.syos.repository.ShelfStockRepository;
 import com.syos.repository.StockBatchRepository;
 import com.syos.strategy.ShelfStrategy;
 
-//Singleton that handles both Moving stock from back‐store to shelf Deducting shelf stock on purchase (and alerting observers)
+//singleton that handles both Moving stock from back‐store to shelf Deducting shelf stock on purchase (and alerting observers)
 
 public class InventoryManager {
 	private static InventoryManager instance;
 
-	private final StockBatchRepository batchRepo = new StockBatchRepository();
-	private final ShelfStockRepository shelfRepo = new ShelfStockRepository();
+	private final StockBatchRepository batchRepository = new StockBatchRepository();
+	private final ShelfStockRepository shelfRepository = new ShelfStockRepository();
+	private final ShelfStrategy strategy;
 	private final List<StockObserver> observers = new ArrayList<>();
+
 	private InventoryManager(ShelfStrategy strategy) {
+		this.strategy = strategy;
 	}
 
 	public static synchronized InventoryManager getInstance(ShelfStrategy strat) {
@@ -38,40 +40,52 @@ public class InventoryManager {
 	}
 
 	public void receiveStock(String productCode, LocalDate purchaseDate, LocalDate expiryDate, int quantity) {
-		batchRepo.createBatch(productCode, purchaseDate, expiryDate, quantity);
+		batchRepository.createBatch(productCode, purchaseDate, expiryDate, quantity);
 		System.out.printf("Received batch: %s qty=%d exp=%s%n", productCode, quantity, expiryDate);
 	}
 
-	//move up to qtyToMove from back‐store to shelf
-	 
+	// move up to qtyToMove from back‐store to shelf
+
 	public void moveToShelf(String productCode, int qtyToMove) {
-	    int remainingToMove = qtyToMove;
-	    List<StockBatch> batches = batchRepo.findByProduct(productCode);
+		int remainingToMove = qtyToMove;
 
-	    // Sort FIFO by purchaseDate ascending
-	    batches.sort(Comparator.comparing(StockBatch::getPurchaseDate));
-	    var it = batches.iterator();
+		// Keep grabbing single batches via the strategy until we run out
+		List<StockBatch> batches = batchRepository.findByProduct(productCode);
 
-	    while (remainingToMove > 0 && it.hasNext()) {
-	        StockBatch batch = it.next();
-	        int available = batch.getQuantityRemaining();
-	        int used = Math.min(available, remainingToMove);
+		while (remainingToMove > 0 && !batches.isEmpty()) {
+			// Let the strategy pick exactly one batch from the current list
+			StockBatch chosenBatch = strategy.selectBatch(batches);
+			if (chosenBatch == null) {
+				break;
+			}
 
-	        batch.setQuantityRemaining(available - used);
-	        batchRepo.updateQuantity(batch.getId(), batch.getQuantityRemaining());
+			int available = chosenBatch.getQuantityRemaining();
+			int used = Math.min(available, remainingToMove);
 
-	        shelfRepo.upsertQuantity(productCode, used);
-	        remainingToMove -= used;
-	    }
-	    System.out.printf("Moved %d units of %s to shelf%n", qtyToMove - remainingToMove, productCode);
+			// Update that batch’s remaining quantity in the DB
+			chosenBatch.setQuantityRemaining(available - used);
+			batchRepository.updateQuantity(chosenBatch.getId(), chosenBatch.getQuantityRemaining());
+
+			// Upsert onto shelf
+			shelfRepository.upsertQuantity(productCode, used);
+
+			remainingToMove -= used;
+
+			// If this batch is now fully consumed, remove it from the local list
+			if (chosenBatch.getQuantityRemaining() == 0) {
+				batches.remove(chosenBatch);
+			}
+			// Otherwise, update our `batches` list so next iteration re‐evaluates it.
+		}
+
+		System.out.printf("Moved %d units of %s to shelf%n", qtyToMove - remainingToMove, productCode);
 	}
-
 
 	// deduct purchased items from shelf and alert if low
 
 	public void deductFromShelf(String productCode, int qty) {
-		shelfRepo.deductQuantity(productCode, qty);
-		int remain = shelfRepo.getQuantity(productCode);
+		shelfRepository.deductQuantity(productCode, qty);
+		int remain = shelfRepository.getQuantity(productCode);
 		if (remain < 50) {
 			notifyLow(productCode, remain);
 		}
