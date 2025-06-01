@@ -20,7 +20,7 @@ public class BillingRepository {
 				RETURNING id
 				""";
 
-		// Added discount_amount column to bill_item insert
+		// added discount_amount column to bill_item insert
 		String insertItem = """
 				INSERT INTO bill_item (bill_id, product_code, quantity, total_price, discount_amount)
 				VALUES (?, ?, ?, ?, ?)

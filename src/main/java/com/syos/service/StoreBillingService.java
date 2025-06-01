@@ -16,83 +16,86 @@ import com.syos.strategy.ExpiryAwareFifoStrategy;
 import com.syos.strategy.NoDiscountStrategy;
 
 public class StoreBillingService {
-	private final ProductRepository productRepository = new ProductRepository();
-	private final BillingRepository billingRepository = new BillingRepository();
-	private final BillItemFactory itemFactory =
-		    new BillItemFactory(new DiscountPricingStrategy(new NoDiscountStrategy()));
-	private final Scanner sc = new Scanner(System.in);
+	private final ProductRepository productRepo = new ProductRepository();
+	private final BillingRepository billRepo = new BillingRepository();
+	private final BillItemFactory billItemFactory =
+	    new BillItemFactory(new DiscountPricingStrategy(new NoDiscountStrategy()));
+	private final Scanner inputScanner = new Scanner(System.in);
 	private final InventoryManager inventoryManager;
-	private static int stockThreshhold = 50;
+	private static final int STOCK_ALERT_THRESHOLD = 50;
 
-	// alert if stock is below 50
 	public StoreBillingService() {
 		inventoryManager = InventoryManager.getInstance(new ExpiryAwareFifoStrategy());
-		inventoryManager.addObserver(new StockAlertService(stockThreshhold));
+		inventoryManager.addObserver(new StockAlertService(STOCK_ALERT_THRESHOLD));
 	}
 
 	public void run() {
-		List<BillItem> items = new ArrayList<>();
+		List<BillItem> billItems = new ArrayList<>();
 		System.out.println("\n Type the word 'done' after entering the products to proceed to payment.");
 
-		// item entry loop
+		// Input loop
 		while (true) {
 			System.out.print("\n Enter the product code : ");
-			String code = sc.nextLine().trim();
-			if ("done".equalsIgnoreCase(code))
+			String productCode = inputScanner.nextLine().trim();
+			if ("done".equalsIgnoreCase(productCode))
 				break;
 
-			Product p = productRepository.findByCode(code);
-			if (p == null) {
+			Product product = productRepo.findByCode(productCode);
+			if (product == null) {
 				System.out.println(" Code not found.");
 				continue;
 			}
 
 			System.out.print("\n Quantity: ");
-			int qty = Integer.parseInt(sc.nextLine().trim());
-			items.add(itemFactory.create(p, qty));
+			int quantity = Integer.parseInt(inputScanner.nextLine().trim());
+			billItems.add(billItemFactory.create(product, quantity));
 		}
 
-		if (items.isEmpty()) {
+		if (billItems.isEmpty()) {
 			System.out.println("No items entered. Exiting.");
 			return;
 		}
 
-		// compute totals and accept cash
-		double total = items.stream().mapToDouble(BillItem::getTotalPrice).sum();
-		System.out.printf("\n Total due: %.2f\n", total);
+		// Compute total
+		double totalDue = billItems.stream()
+		                           .mapToDouble(BillItem::getTotalPrice)
+		                           .sum();
+		System.out.printf("\n Total due: %.2f\n", totalDue);
 
 		System.out.print("\n Cash tendered: ");
-		double cash = Double.parseDouble(sc.nextLine().trim());
+		double cashTendered = Double.parseDouble(inputScanner.nextLine().trim());
 
-		// build and persist bill
-		int serial = billingRepository.nextSerial();
-		Bill bill = new Bill.BillBuilder(serial, items).withCashTendered(cash).build();
+		// Build and persist bill
+		int serialNumber = billRepo.nextSerial();
+		Bill bill = new Bill.BillBuilder(serialNumber, billItems)
+		                    .withCashTendered(cashTendered)
+		                    .build();
 
-		billingRepository.save(bill);
+		billRepo.save(bill);
 
-		// deduct from shelf stock
-		for (BillItem item : items) {
+		// Update stock
+		for (BillItem item : billItems) {
 			inventoryManager.deductFromShelf(item.getProduct().getCode(), item.getQuantity());
 		}
 
-		// display summary with discount info
+		// Display bill summary
 		System.out.println("\n Bill #" + bill.getSerialNumber() + " — " + bill.getBillDate());
 
-		for (BillItem i : items) {
-		    String name = i.getProduct().getName();
-		    int qty = i.getQuantity();
-		    double totalPrice = i.getTotalPrice();
-		    double discount = i.getDiscountAmount();
+		for (BillItem item : billItems) {
+		    String productName = item.getProduct().getName();
+		    int quantity = item.getQuantity();
+		    double totalPrice = item.getTotalPrice();
+		    double discountAmount = item.getDiscountAmount();
 
-		    if (discount > 0) {
-		        System.out.printf("  %s x%d = %.2f (Saved: %.2f)%n", name, qty, totalPrice, discount);
+		    if (discountAmount > 0) {
+		        System.out.printf("  %s x%d = %.2f (Discount Amount: %.2f)%n",
+		                          productName, quantity, totalPrice, discountAmount);
 		    } else {
-		        System.out.printf("  %s x%d = %.2f%n", name, qty, totalPrice);
+		        System.out.printf("  %s x%d = %.2f%n", productName, quantity, totalPrice);
 		    }
 		}
 
-		System.out.printf(" \n Total: %.2f | Cash tendered: %.2f | Change: %.2f%n",
-		        bill.getTotalAmount(), bill.getCashTendered(), bill.getChangeReturned());
-
+		System.out.printf("\n Total: %.2f | Cash tendered: %.2f | Change: %.2f%n",
+		                  bill.getTotalAmount(), bill.getCashTendered(), bill.getChangeReturned());
 	}
 }

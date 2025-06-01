@@ -1,6 +1,5 @@
 package com.syos.strategy;
 
-import com.syos.enums.DiscountType;
 import com.syos.model.Discount;
 import com.syos.model.Product;
 import com.syos.repository.DiscountRepository;
@@ -10,40 +9,51 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class DiscountPricingStrategy implements PricingStrategy {
-	private final PricingStrategy baseStrategy;
-	private final DiscountRepository discountRepo = new DiscountRepository();
+	private final PricingStrategy basePriceStrategy;
+	private final DiscountRepository discountRepository = new DiscountRepository();
 	private final InventoryManager inventoryManager = InventoryManager.getInstance(null);
+	private static final double MIN_TOTAL_PRICE = 0.0;
 
-	public DiscountPricingStrategy(PricingStrategy baseStrategy) {
-		this.baseStrategy = baseStrategy;
+	public DiscountPricingStrategy(PricingStrategy basePriceStrategy) {
+		this.basePriceStrategy = basePriceStrategy;
 	}
 
 	@Override
 	public double calculate(Product product, int quantity) {
-		double baseTotal = baseStrategy.calculate(product, quantity);
-		int qtyOnShelf = inventoryManager.getQuantityOnShelf(product.getCode());
-		if (qtyOnShelf <= 0) {
+		double baseTotal = basePriceStrategy.calculate(product, quantity);
+		int availableStock = inventoryManager.getQuantityOnShelf(product.getCode());
+
+		// no discount if product is not in stock
+		if (availableStock <= 0) {
 			return baseTotal;
 		}
 
-		List<Discount> discounts = discountRepo.findActiveDiscounts(product.getCode(), LocalDate.now());
-		if (discounts.isEmpty()) {
+		// fetch active discounts for the product
+		List<Discount> activeDiscounts = discountRepository.findActiveDiscounts(product.getCode(), LocalDate.now());
+		if (activeDiscounts.isEmpty()) {
 			return baseTotal;
 		}
 
-		double bestReducedTotal = baseTotal;
-		for (Discount d : discounts) {
-			double reduced;
-			if (d.getType() == DiscountType.PERCENT) {
-				reduced = baseTotal * (1 - d.getValue() / 100.0);
-			} else {
-				reduced = baseTotal - (d.getValue() * quantity);
+		double bestDiscountedTotal = baseTotal;
+		for (Discount discount : activeDiscounts) {
+			double discountedTotal;
+			switch (discount.getType()) {
+			case PERCENT:
+				discountedTotal = baseTotal * (1 - discount.getValue() / 100.0);
+				break;
+			case AMOUNT:
+				discountedTotal = baseTotal - discount.getValue();
+				break;
+			default:
+				discountedTotal = baseTotal;
 			}
-			if (reduced < bestReducedTotal) {
-				bestReducedTotal = reduced;
+
+			if (discountedTotal < bestDiscountedTotal) {
+				bestDiscountedTotal = discountedTotal;
 			}
 		}
 
-		return Math.max(0.0, bestReducedTotal);
+		// prevent negative totals
+		return Math.max(MIN_TOTAL_PRICE, bestDiscountedTotal);
 	}
 }
