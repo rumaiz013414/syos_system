@@ -39,7 +39,7 @@ public class DiscountPricingStrategy implements PricingStrategy {
 			double discountedTotal;
 			switch (discount.getType()) {
 			case PERCENT:
-				discountedTotal = baseTotal * (1 - discount.getValue() / 100.0);
+				discountedTotal = baseTotal - (baseTotal / discount.getValue());
 				break;
 			case AMOUNT:
 				discountedTotal = baseTotal - discount.getValue();
