@@ -11,13 +11,15 @@ import com.syos.model.Product;
 import com.syos.repository.BillingRepository;
 import com.syos.repository.ProductRepository;
 import com.syos.singleton.InventoryManager;
+import com.syos.strategy.DiscountPricingStrategy;
 import com.syos.strategy.ExpiryAwareFifoStrategy;
 import com.syos.strategy.NoDiscountStrategy;
 
 public class StoreBillingService {
 	private final ProductRepository productRepository = new ProductRepository();
 	private final BillingRepository billingRepository = new BillingRepository();
-	private final BillItemFactory itemFactory = new BillItemFactory(new NoDiscountStrategy());
+	private final BillItemFactory itemFactory =
+		    new BillItemFactory(new DiscountPricingStrategy(new NoDiscountStrategy()));
 	private final Scanner sc = new Scanner(System.in);
 	private final InventoryManager inventoryManager;
 	private static int stockThreshhold = 50;
@@ -73,11 +75,24 @@ public class StoreBillingService {
 			inventoryManager.deductFromShelf(item.getProduct().getCode(), item.getQuantity());
 		}
 
-		// display summary
+		// display summary with discount info
 		System.out.println("\n Bill #" + bill.getSerialNumber() + " — " + bill.getBillDate());
-		items.forEach(i -> System.out.printf("  %s x%d = %.2f%n", i.getProduct().getName(), i.getQuantity(),
-				i.getTotalPrice()));
-		System.out.printf(" \n Total: %.2f | Cash tendered: %.2f | Change: %.2f%n", bill.getTotalAmount(),
-				bill.getCashTendered(), bill.getChangeReturned());
+
+		for (BillItem i : items) {
+		    String name = i.getProduct().getName();
+		    int qty = i.getQuantity();
+		    double totalPrice = i.getTotalPrice();
+		    double discount = i.getDiscountAmount();
+
+		    if (discount > 0) {
+		        System.out.printf("  %s x%d = %.2f (Saved: %.2f)%n", name, qty, totalPrice, discount);
+		    } else {
+		        System.out.printf("  %s x%d = %.2f%n", name, qty, totalPrice);
+		    }
+		}
+
+		System.out.printf(" \n Total: %.2f | Cash tendered: %.2f | Change: %.2f%n",
+		        bill.getTotalAmount(), bill.getCashTendered(), bill.getChangeReturned());
+
 	}
 }

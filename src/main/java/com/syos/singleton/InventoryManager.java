@@ -90,4 +90,8 @@ public class InventoryManager {
 			notifyLow(productCode, remain);
 		}
 	}
+	
+	public int getQuantityOnShelf(String productCode) {
+	    return shelfRepository.getQuantity(productCode);
+	}
 }
