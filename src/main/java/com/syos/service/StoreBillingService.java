@@ -21,9 +21,9 @@ public class StoreBillingService {
 	private final Scanner sc = new Scanner(System.in);
 	private final InventoryManager inventoryManager;
 	private static int stockThreshhold = 50;
+
 	// alert if stock is below 50
 	public StoreBillingService() {
-//		inventoryManager = InventoryManager.getInstance(new ClosestExpiryStrategy());
 		inventoryManager = InventoryManager.getInstance(new ExpiryAwareFifoStrategy());
 		inventoryManager.addObserver(new StockAlertService(stockThreshhold));
 	}
