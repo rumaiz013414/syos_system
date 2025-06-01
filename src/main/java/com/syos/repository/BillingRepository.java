@@ -36,8 +36,6 @@ public class BillingRepository {
                 psBill.setDouble(3, bill.getTotalAmount());
                 psBill.setDouble(4, bill.getCashTendered());
                 psBill.setDouble(5, bill.getChangeReturned());
-
-                // THIS was missing: setting the sixth parameter
                 psBill.setString(6, bill.getTransactionType());
 
                 ResultSet rs = psBill.executeQuery();
@@ -50,7 +48,7 @@ public class BillingRepository {
                 bill.setId(generatedBillId);
             }
 
-            // 2) Insert each BillItem linked by bill_id
+            // Insert each BillItem linked by bill_id
             try (PreparedStatement psItem = conn.prepareStatement(insertItem)) {
                 for (BillItem item : bill.getItems()) {
                     psItem.setInt(1, generatedBillId);

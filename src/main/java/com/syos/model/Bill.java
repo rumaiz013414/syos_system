@@ -59,7 +59,6 @@ public class Bill {
 		return transactionType;
 	}
 
-	// Builder for Bill enforces setting serial, items, cash, and transactionType
 	public static class BillBuilder {
 		private final int serialNumber;
 		private final List<BillItem> items;
