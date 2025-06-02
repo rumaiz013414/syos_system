@@ -7,7 +7,7 @@ import com.syos.service.StoreBillingService;
 
 import java.util.Scanner;
 
-public class Main {
+public class SyosSystem {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         StoreBillingService billingService = new StoreBillingService();

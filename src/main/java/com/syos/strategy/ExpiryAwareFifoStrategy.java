@@ -6,14 +6,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * A ShelfStrategy that:
- *
- * 1) Finds all “safe” batches (expiryDate > today + 7 days). Among those,
- *    picks the one with the earliest purchaseDate.
- * 2) If no “safe” batch exists, picks the batch with the earliest purchaseDate
- *    among all (i.e. everything is near‐expiry, so just do pure FIFO).
- */
+
 public class ExpiryAwareFifoStrategy implements ShelfStrategy {
 
     @Override
@@ -25,7 +18,6 @@ public class ExpiryAwareFifoStrategy implements ShelfStrategy {
         LocalDate cutoff = LocalDate.now().plusWeeks(1);
         StockBatch bestSafe = null;
 
-        // 1) Scan for “safe” batches (expiryDate > cutoff), pick earliest purchaseDate
         for (StockBatch batch : batches) {
             if (batch.getExpiryDate().isAfter(cutoff)) {
                 if (bestSafe == null
@@ -39,7 +31,7 @@ public class ExpiryAwareFifoStrategy implements ShelfStrategy {
             return bestSafe;
         }
 
-        // 2) If no safe batch, all are “near‐expiry”—pick earliest purchaseDate among all
+  
         StockBatch oldest = null;
         for (StockBatch batch : batches) {
             if (oldest == null
