@@ -1,6 +1,6 @@
 package com.syos.command;
 
-import com.syos.service.DiscountCreationService; // Corrected import
+import com.syos.service.DiscountCreationService; 
 import java.util.Scanner;
 
 public class CreateDiscountCommand implements Command {

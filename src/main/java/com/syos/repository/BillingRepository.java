@@ -20,7 +20,6 @@ public class BillingRepository {
 				RETURNING id
 				""";
 
-		// added discount_amount column to bill_item insert
 		String insertItem = """
 				INSERT INTO bill_item (bill_id, product_code, quantity, total_price, discount_amount)
 				VALUES (?, ?, ?, ?, ?)
@@ -53,7 +52,7 @@ public class BillingRepository {
 					psItem.setString(2, item.getProduct().getCode());
 					psItem.setInt(3, item.getQuantity());
 					psItem.setDouble(4, item.getTotalPrice());
-					psItem.setDouble(5, item.getDiscountAmount()); // set discount amount here
+					psItem.setDouble(5, item.getDiscountAmount()); 
 					psItem.addBatch();
 				}
 				psItem.executeBatch();

@@ -7,8 +7,8 @@ public class BillItem {
     private final int billId;
     private final Product product;
     private final int quantity;
-    private final double totalPrice;      // price after discount
-    private final double discountAmount;  // discount applied on total
+    private final double totalPrice;     
+    private final double discountAmount; 
 
     private BillItem(BillItemBuilder b) {
         this.id             = 0;

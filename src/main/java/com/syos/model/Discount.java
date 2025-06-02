@@ -44,7 +44,6 @@ public class Discount {
 		return end;
 	}
 
-	/** Returns true if today (or provided date) is within [start, end] */
 	public boolean isActiveOn(LocalDate date) {
 		return (date.isEqual(start) || date.isAfter(start)) && (date.isEqual(end) || date.isBefore(end));
 	}

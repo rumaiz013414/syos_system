@@ -4,10 +4,6 @@ import java.util.Scanner;
 
 import com.syos.singleton.InventoryManager;
 
-/**
- * Prompts the user for product code and quantity, then calls
- * inventoryManager.moveToShelf(...).
- */
 public class MoveToShelfCommand implements Command {
 	private final InventoryManager inventoryManager;
 	private final Scanner scanner;
@@ -22,7 +18,7 @@ public class MoveToShelfCommand implements Command {
 		System.out.print("Product code: ");
 		String code = scanner.nextLine().trim();
 		if (code.isEmpty()) {
-			System.out.println("⚠️  Product code cannot be empty.");
+			System.out.println("Product code cannot be empty.");
 			return;
 		}
 
@@ -31,19 +27,19 @@ public class MoveToShelfCommand implements Command {
 		try {
 			qty = Integer.parseInt(scanner.nextLine().trim());
 			if (qty <= 0) {
-				System.out.println("⚠️  Quantity must be positive.");
+				System.out.println("Quantity must be positive.");
 				return;
 			}
 		} catch (NumberFormatException e) {
-			System.out.println("⚠️  Invalid quantity. Please enter a positive integer.");
+			System.out.println("Invalid quantity. Please enter a positive integer.");
 			return;
 		}
 
 		try {
 			inventoryManager.moveToShelf(code, qty);
-			System.out.printf("✅  Moved up to %d units of %s to shelf.%n", qty, code);
+			System.out.printf("Moved up to %d units of %s to shelf.%n", qty, code);
 		} catch (Exception e) {
-			System.out.println("❌  Failed to move to shelf: " + e.getMessage());
+			System.out.println("Failed to move to shelf: " + e.getMessage());
 		}
 	}
 }

@@ -5,10 +5,6 @@ import java.util.Scanner;
 
 import com.syos.singleton.InventoryManager;
 
-/**
- * Prompts the user for product code, quantity, purchase date, expiry date, then
- * calls inventoryManager.receiveStock(...).
- */
 public class ReceiveStockCommand implements Command {
 	private final InventoryManager inventoryManager;
 	private final Scanner scanner;
@@ -23,7 +19,7 @@ public class ReceiveStockCommand implements Command {
 		System.out.print("Product code: ");
 		String code = scanner.nextLine().trim();
 		if (code.isEmpty()) {
-			System.out.println("⚠️  Product code cannot be empty.");
+			System.out.println("Product code cannot be empty.");
 			return;
 		}
 
@@ -32,11 +28,11 @@ public class ReceiveStockCommand implements Command {
 		try {
 			qty = Integer.parseInt(scanner.nextLine().trim());
 			if (qty <= 0) {
-				System.out.println("⚠️  Quantity must be positive.");
+				System.out.println("Quantity must be positive.");
 				return;
 			}
 		} catch (NumberFormatException e) {
-			System.out.println("⚠️  Invalid quantity. Please enter a positive integer.");
+			System.out.println("Invalid quantity. Please enter a positive integer.");
 			return;
 		}
 
@@ -45,7 +41,7 @@ public class ReceiveStockCommand implements Command {
 		try {
 			pd = LocalDate.parse(scanner.nextLine().trim());
 		} catch (Exception e) {
-			System.out.println("⚠️  Invalid date format. Use YYYY-MM-DD.");
+			System.out.println("Invalid date format. Use YYYY-MM-DD.");
 			return;
 		}
 
@@ -54,20 +50,20 @@ public class ReceiveStockCommand implements Command {
 		try {
 			ed = LocalDate.parse(scanner.nextLine().trim());
 		} catch (Exception e) {
-			System.out.println("⚠️  Invalid date format. Use YYYY-MM-DD.");
+			System.out.println("Invalid date format. Use YYYY-MM-DD.");
 			return;
 		}
 
 		if (ed.isBefore(pd)) {
-			System.out.println("⚠️  Expiry date cannot be before purchase date.");
+			System.out.println("Expiry date cannot be before purchase date.");
 			return;
 		}
 
 		try {
 			inventoryManager.receiveStock(code, pd, ed, qty);
-			System.out.printf("✅  Received %d units of %s (expires %s)%n", qty, code, ed);
+			System.out.printf("Received %d units of %s (expires %s)%n", qty, code, ed);
 		} catch (Exception e) {
-			System.out.println("❌  Failed to receive stock: " + e.getMessage());
+			System.out.println("Failed to receive stock: " + e.getMessage());
 		}
 	}
 }

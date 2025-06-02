@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Scanner;
 
 import com.syos.command.AddProductCommand;
-import com.syos.command.AssignDiscountCommand; // This now assigns EXISTING discounts
-import com.syos.command.CreateDiscountCommand; // NEW command for creating discounts
+import com.syos.command.AssignDiscountCommand; 
+import com.syos.command.CreateDiscountCommand; 
 import com.syos.command.Command;
 import com.syos.command.MoveToShelfCommand;
 import com.syos.command.ReceiveStockCommand;
@@ -26,8 +26,8 @@ public class InventoryService {
         commandMap.put("1", new ReceiveStockCommand(inventoryManager, sc));
         commandMap.put("2", new MoveToShelfCommand(inventoryManager, sc));
         commandMap.put("3", new AddProductCommand(productService, sc));
-        commandMap.put("4", new CreateDiscountCommand(sc)); // NEW: Create a discount
-        commandMap.put("5", new AssignDiscountCommand(sc)); // MODIFIED: Assign an existing discount
+        commandMap.put("4", new CreateDiscountCommand(sc)); 
+        commandMap.put("5", new AssignDiscountCommand(sc)); 
     }
 
     public void run() {
@@ -36,13 +36,13 @@ public class InventoryService {
             System.out.println("1) Receive stock");
             System.out.println("2) Move to shelf");
             System.out.println("3) Add product");
-            System.out.println("4) Create new discount");       // NEW menu item
-            System.out.println("5) Assign discount to product"); // MODIFIED menu item
-            System.out.println("6) Exit");                       // Adjusted exit number
+            System.out.println("4) Create new discount");       
+            System.out.println("5) Assign discount to product"); 
+            System.out.println("6) Exit");                       
             System.out.print("Choose an option: ");
 
             String choice = sc.nextLine().trim();
-            if ("6".equals(choice)) { // Adjusted exit condition
+            if ("6".equals(choice)) { 
                 System.out.println("Exiting Inventory Menu.");
                 break;
             }

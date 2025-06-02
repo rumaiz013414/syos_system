@@ -37,7 +37,7 @@ public class DiscountRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Error finding discount by ID: " + discountId, e);
         }
-        return null; // Discount not found
+        return null; 
     }
 
     public List<Discount> findActiveDiscounts(String productCode, LocalDate date) {
@@ -110,9 +110,7 @@ public class DiscountRepository {
         }
     }
 
-    /**
-     * Links an existing discount ID to a product code in product_discounts.
-     */
+   
     public void linkProductToDiscount(String productCode, int discountId) {
         String sql = """
                 INSERT INTO product_discounts (product_code, discount_id)
