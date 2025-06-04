@@ -136,4 +136,34 @@ public class InventoryManager {
         }
         return shelfRepository.getQuantity(productCode);
     }
+    
+    public List<StockBatch> getBatchesForProduct(String productCode) {
+        return batchRepository.findByProduct(productCode);
+    }
+
+    public List<String> getAllProductCodes() {
+        return shelfRepository.getAllProductCodes(); 
+    }
+    
+    public List<String> getAllProductCodesWithExpiringBatches(int daysThreshold) {
+        List<StockBatch> allExpiringBatches = batchRepository.findAllExpiringBatches(daysThreshold);
+        List<String> productCodes = new ArrayList<>();
+        for (StockBatch batch : allExpiringBatches) {
+            if (!productCodes.contains(batch.getProductCode())) {
+                productCodes.add(batch.getProductCode());
+            }
+        }
+        return productCodes;
+    }
+
+    // get specific batches close to expiry for a given product
+    public List<StockBatch> getExpiringBatchesForProduct(String productCode, int daysThreshold) {
+        return batchRepository.findExpiringBatches(productCode, daysThreshold);
+    }
+
+    // remove quantity from shelf (used by RemoveExpiryStockCommand)
+    public void removeQuantityFromShelf(String productCode, int quantityToRemove) {
+        deductFromShelf(productCode, quantityToRemove);
+    }
+
 }

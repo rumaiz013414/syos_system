@@ -3,6 +3,9 @@ package com.syos.repository;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.syos.db.DatabaseManager;
 
@@ -61,4 +64,22 @@ public class ShelfStockRepository {
             throw new RuntimeException(e);
         }
     }
+    
+    public List<String> getAllProductCodes() {
+        String sql = "SELECT DISTINCT product_code FROM shelf_stock";
+        List<String> productCodes = new ArrayList<>();
+        try (Connection conn = DatabaseManager.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                productCodes.add(rs.getString("product_code"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting all product codes", e);
+        }
+        return productCodes;
+    }
+    
+    
 }

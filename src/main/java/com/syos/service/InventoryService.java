@@ -10,6 +10,9 @@ import com.syos.command.Command;
 import com.syos.command.CreateDiscountCommand;
 import com.syos.command.MoveToShelfCommand;
 import com.syos.command.ReceiveStockCommand;
+import com.syos.command.ViewStockCommand;
+import com.syos.command.ViewExpiryStockCommand;
+import com.syos.command.RemoveExpiryStockCommand;
 import com.syos.repository.DiscountRepository;
 import com.syos.repository.ProductRepository;
 import com.syos.singleton.InventoryManager;
@@ -23,6 +26,7 @@ public class InventoryService {
 	public InventoryService() {
 		this.inventoryManager = InventoryManager.getInstance(new ExpiryAwareFifoStrategy());
 		inventoryManager.addObserver(new StockAlertService(50));
+
 		ProductService productService = new ProductService();
 		ProductRepository productRepository = new ProductRepository();
 		DiscountRepository discountRepository = new DiscountRepository();
@@ -32,6 +36,9 @@ public class InventoryService {
 		commandMap.put("3", new AddProductCommand(productService, scanner, productRepository));
 		commandMap.put("4", new CreateDiscountCommand(scanner, discountRepository));
 		commandMap.put("5", new AssignDiscountCommand(scanner, discountRepository, productRepository));
+		commandMap.put("6", new ViewStockCommand(inventoryManager, scanner));
+		commandMap.put("7", new ViewExpiryStockCommand(inventoryManager, scanner)); // NEW
+		commandMap.put("8", new RemoveExpiryStockCommand(inventoryManager, scanner)); // NEW
 	}
 
 	public void run() {
@@ -42,11 +49,14 @@ public class InventoryService {
 			System.out.println("3) Add product");
 			System.out.println("4) Create new discount");
 			System.out.println("5) Assign discount to product");
-			System.out.println("6) Exit");
+			System.out.println("6) View all stock");
+			System.out.println("7) View close to expiry stocks");
+			System.out.println("8) Remove close to expiry stock from shelf");
+			System.out.println("9) Exit");
 			System.out.print("Choose an option: ");
 
 			String choice = scanner.nextLine().trim();
-			if ("6".equals(choice)) {
+			if ("9".equals(choice)) {
 				System.out.println("Exiting Inventory Menu.");
 				break;
 			}
@@ -55,7 +65,7 @@ public class InventoryService {
 			if (cmd != null) {
 				cmd.execute();
 			} else {
-				System.out.println("Invalid option. Please choose 1, 2, 3, 4, 5, or 6.");
+				System.out.println("Invalid option. Please choose 1, 2, 3, 4, 5, 6, 7, 8 or 9.");
 			}
 		}
 	}
