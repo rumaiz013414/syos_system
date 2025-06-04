@@ -115,7 +115,7 @@ public class StockBatchRepository {
 		return out;
 	}
 
-	// fetch aLL batches that are close to expiry 
+	// fetch aLL batches that are close to expire
 	public List<StockBatch> findAllExpiringBatches(int daysThreshold) {
 		String sql = """
 				SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
@@ -138,5 +138,27 @@ public class StockBatchRepository {
 			throw new RuntimeException("Error loading all expiring stock batches", e);
 		}
 		return out;
+	}
+
+	public StockBatch findById(int batchId) {
+		String sql = """
+				SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
+				FROM stock_batches
+				WHERE id = ?
+				""";
+		try (Connection conn = DatabaseManager.getInstance().getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setInt(1, batchId);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				return new StockBatch(rs.getInt("id"), rs.getString("product_code"),
+						rs.getDate("purchase_date").toLocalDate(), rs.getDate("expiry_date").toLocalDate(),
+						rs.getInt("quantity_remaining"));
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException("Error finding batch by ID", e);
+		}
+		return null; // Return null if not found
 	}
 }
