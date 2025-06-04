@@ -1,17 +1,19 @@
 package com.syos.command;
 
-import com.syos.service.DiscountCreationService; 
 import java.util.Scanner;
 
+import com.syos.service.DiscountCreationService;
+import com.syos.repository.DiscountRepository;
+
 public class CreateDiscountCommand implements Command {
-    private final DiscountCreationService discountCreationService;
+	private final DiscountCreationService discountCreationService;
 
-    public CreateDiscountCommand(Scanner scanner) {
-        this.discountCreationService = new DiscountCreationService(scanner);
-    }
+	public CreateDiscountCommand(Scanner scanner, DiscountRepository discountRepository) {
+		this.discountCreationService = new DiscountCreationService(scanner, discountRepository);
+	}
 
-    @Override
-    public void execute() {
-        discountCreationService.createDiscount();
-    }
+	@Override
+	public void execute() {
+		discountCreationService.createDiscount();
+	}
 }

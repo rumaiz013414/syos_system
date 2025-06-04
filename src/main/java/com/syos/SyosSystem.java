@@ -1,11 +1,11 @@
 package com.syos;
 
+import java.util.Scanner;
+
 import com.syos.service.InventoryService;
 import com.syos.service.OnlineStoreService;
 //import com.syos.service.ReportService;
 import com.syos.service.StoreBillingService;
-
-import java.util.Scanner;
 
 public class SyosSystem {
     public static void main(String[] args) {

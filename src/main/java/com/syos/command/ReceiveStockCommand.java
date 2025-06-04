@@ -1,6 +1,7 @@
 package com.syos.command;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 import com.syos.singleton.InventoryManager;
@@ -16,54 +17,71 @@ public class ReceiveStockCommand implements Command {
 
 	@Override
 	public void execute() {
-		System.out.print("Product code: ");
-		String code = scanner.nextLine().trim();
-		if (code.isEmpty()) {
-			System.out.println("Product code cannot be empty.");
-			return;
-		}
+		System.out.println("\n=== Receive New Stock ===");
 
-		System.out.print("Quantity: ");
-		int qty;
-		try {
-			qty = Integer.parseInt(scanner.nextLine().trim());
-			if (qty <= 0) {
-				System.out.println("Quantity must be positive.");
-				return;
+		String code;
+		while (true) {
+			System.out.print("Product code: ");
+			code = scanner.nextLine().trim();
+			if (code.isEmpty()) {
+				System.out.println("Error: Product code cannot be empty.");
+			} else {
+				break;
 			}
-		} catch (NumberFormatException e) {
-			System.out.println("Invalid quantity. Please enter a positive integer.");
-			return;
 		}
 
-		System.out.print("Purchase date (YYYY-MM-DD): ");
+		int qty;
+		while (true) {
+			System.out.print("Quantity: ");
+			String qtyInput = scanner.nextLine().trim();
+			try {
+				qty = Integer.parseInt(qtyInput);
+				if (qty <= 0) {
+					System.out.println("Error: Quantity must be positive.");
+				} else {
+					break;
+				}
+			} catch (NumberFormatException e) {
+				System.out.println("Error: Invalid quantity. Please enter a positive integer.");
+			}
+		}
+
 		LocalDate pd;
-		try {
-			pd = LocalDate.parse(scanner.nextLine().trim());
-		} catch (Exception e) {
-			System.out.println("Invalid date format. Use YYYY-MM-DD.");
-			return;
+		while (true) {
+			System.out.print("Purchase date (YYYY-MM-DD): ");
+			String pdInput = scanner.nextLine().trim();
+			try {
+				pd = LocalDate.parse(pdInput);
+				break;
+			} catch (DateTimeParseException e) {
+				System.out.println("Error: Invalid purchase date format. Please use YYYY-MM-DD.");
+			}
 		}
 
-		System.out.print("Expiry date  (YYYY-MM-DD): ");
 		LocalDate ed;
-		try {
-			ed = LocalDate.parse(scanner.nextLine().trim());
-		} catch (Exception e) {
-			System.out.println("Invalid date format. Use YYYY-MM-DD.");
-			return;
-		}
+		while (true) {
+			System.out.print("Expiry date (YYYY-MM-DD): ");
+			String edInput = scanner.nextLine().trim();
+			try {
+				ed = LocalDate.parse(edInput);
 
-		if (ed.isBefore(pd)) {
-			System.out.println("Expiry date cannot be before purchase date.");
-			return;
+				if (ed.isBefore(pd)) {
+					System.out.println("Error: Expiry date cannot be before purchase date.");
+				} else {
+					break;
+				}
+			} catch (DateTimeParseException e) {
+				System.out.println("Error: Invalid expiry date format. Please use YYYY-MM-DD.");
+			}
 		}
 
 		try {
 			inventoryManager.receiveStock(code, pd, ed, qty);
-			System.out.printf("Received %d units of %s (expires %s)%n", qty, code, ed);
-		} catch (Exception e) {
+		} catch (IllegalArgumentException e) {
 			System.out.println("Failed to receive stock: " + e.getMessage());
+		} catch (RuntimeException e) {
+			System.out.println("An unexpected error occurred: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }

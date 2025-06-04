@@ -1,17 +1,22 @@
+// Modified AssignDiscountCommand
 package com.syos.command;
 
-import com.syos.service.DiscountAssignmentService; // Corrected import
 import java.util.Scanner;
 
+import com.syos.service.DiscountAssignmentService;
+import com.syos.repository.DiscountRepository;
+import com.syos.repository.ProductRepository;
+
 public class AssignDiscountCommand implements Command {
-    private final DiscountAssignmentService discountAssignmentService;
+	private final DiscountAssignmentService discountAssignmentService;
 
-    public AssignDiscountCommand(Scanner scanner) {
-        this.discountAssignmentService = new DiscountAssignmentService(scanner);
-    }
+	public AssignDiscountCommand(Scanner scanner, DiscountRepository discountRepository,
+			ProductRepository productRepository) {
+		this.discountAssignmentService = new DiscountAssignmentService(scanner, discountRepository, productRepository);
+	}
 
-    @Override
-    public void execute() {
-        discountAssignmentService.assignDiscountToProduct();
-    }
+	@Override
+	public void execute() {
+		discountAssignmentService.assignDiscountToProduct();
+	}
 }

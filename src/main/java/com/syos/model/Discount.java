@@ -1,6 +1,7 @@
 package com.syos.model;
 
 import java.time.LocalDate;
+
 import com.syos.enums.DiscountType;
 
 public class Discount {

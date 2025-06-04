@@ -7,11 +7,11 @@ import com.syos.model.StockBatch;
 
 public interface ShelfStrategy {
 	StockBatch selectBatch(List<StockBatch> batches);
-	
+
     /**
      * @return a Comparator that orders StockBatch instances
      *         according to this strategy’s policy.
      */
     Comparator<StockBatch> getComparator();
-    
+
 }

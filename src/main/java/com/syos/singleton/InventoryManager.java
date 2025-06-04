@@ -9,89 +9,131 @@ import com.syos.repository.ShelfStockRepository;
 import com.syos.repository.StockBatchRepository;
 import com.syos.strategy.ShelfStrategy;
 
-//singleton that handles both Moving stock from back‐store to shelf Deducting shelf stock on purchase (and alerting observers)
-
 public class InventoryManager {
-	private static InventoryManager instance;
+    private static InventoryManager instance;
 
-	private final StockBatchRepository batchRepository = new StockBatchRepository();
-	private final ShelfStockRepository shelfRepository = new ShelfStockRepository();
-	private final ShelfStrategy strategy;
-	private final List<StockObserver> observers = new ArrayList<>();
+    private final StockBatchRepository batchRepository; 
+    private final ShelfStockRepository shelfRepository; 
+    private final ShelfStrategy strategy;
+    private final List<StockObserver> observers = new ArrayList<>();
 
-	private InventoryManager(ShelfStrategy strategy) {
-		this.strategy = strategy;
-	}
+    public InventoryManager(ShelfStrategy strategy, StockBatchRepository batchRepository, ShelfStockRepository shelfRepository) {
+        this.strategy = strategy;
+        this.batchRepository = batchRepository;
+        this.shelfRepository = shelfRepository;
+    }
 
-	public static synchronized InventoryManager getInstance(ShelfStrategy strat) {
-		if (instance == null) {
-			instance = new InventoryManager(strat);
-		}
-		return instance;
-	}
+    
+    public static synchronized InventoryManager getInstance(ShelfStrategy strat) {
+        if (instance == null) {
+            instance = new InventoryManager(strat, new StockBatchRepository(), new ShelfStockRepository());
+        }
+        return instance;
+    }
 
-	public void addObserver(StockObserver obs) {
-		observers.add(obs);
-	}
+    public static synchronized void resetInstance() {
+        instance = null;
+    }
 
-	private void notifyLow(String code, int remaining) {
-		for (var o : observers)
-			o.onStockLow(code, remaining);
-	}
+    public void addObserver(StockObserver obs) {
+        observers.add(obs);
+    }
 
-	public void receiveStock(String productCode, LocalDate purchaseDate, LocalDate expiryDate, int quantity) {
-		batchRepository.createBatch(productCode, purchaseDate, expiryDate, quantity);
-		System.out.printf("Received batch: %s qty=%d exp=%s%n", productCode, quantity, expiryDate);
-	}
+    protected void notifyLow(String code, int remaining) {
+        for (var o : observers) {
+            o.onStockLow(code, remaining);
+        }
+    }
 
-	// move up to qtyToMove from back‐store to shelf
+    public void receiveStock(String productCode, LocalDate purchaseDate, LocalDate expiryDate, int quantity) {
+        if (productCode == null || productCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Product code cannot be empty.");
+        }
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be positive.");
+        }
+        if (purchaseDate == null || expiryDate == null) {
+            throw new IllegalArgumentException("Purchase date and expiry date cannot be null.");
+        }
+        if (expiryDate.isBefore(purchaseDate)) {
+            throw new IllegalArgumentException("Expiry date cannot be before purchase date.");
+        }
 
-	public void moveToShelf(String productCode, int qtyToMove) {
-		int remainingToMove = qtyToMove;
+        batchRepository.createBatch(productCode, purchaseDate, expiryDate, quantity);
+        System.out.printf("Received batch: %s qty=%d exp=%s%n", productCode, quantity, expiryDate);
+    }
 
-		// Keep grabbing single batches via the strategy until we run out
-		List<StockBatch> batches = batchRepository.findByProduct(productCode);
+    public void moveToShelf(String productCode, int qtyToMove) {
+        if (productCode == null || productCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Product code cannot be empty.");
+        }
+        if (qtyToMove <= 0) {
+            throw new IllegalArgumentException("Quantity to move must be positive.");
+        }
 
-		while (remainingToMove > 0 && !batches.isEmpty()) {
-			// Let the strategy pick exactly one batch from the current list
-			StockBatch chosenBatch = strategy.selectBatch(batches);
-			if (chosenBatch == null) {
-				break;
-			}
+        int remainingToMove = qtyToMove;
 
-			int available = chosenBatch.getQuantityRemaining();
-			int used = Math.min(available, remainingToMove);
+        List<StockBatch> batches = batchRepository.findByProduct(productCode);
 
-			// Update that batch’s remaining quantity in the DB
-			chosenBatch.setQuantityRemaining(available - used);
-			batchRepository.updateQuantity(chosenBatch.getId(), chosenBatch.getQuantityRemaining());
+        if (batches == null || batches.isEmpty()) {
+            throw new IllegalArgumentException("No stock batches found for product: " + productCode);
+        }
 
-			// Upsert onto shelf
-			shelfRepository.upsertQuantity(productCode, used);
+        int totalAvailableInBatches = batches.stream().mapToInt(StockBatch::getQuantityRemaining).sum();
+        if (totalAvailableInBatches < qtyToMove) {
+            throw new IllegalArgumentException(String.format("Insufficient stock in back-store for %s. Available: %d, Requested: %d.", productCode, totalAvailableInBatches, qtyToMove));
+        }
 
-			remainingToMove -= used;
+        while (remainingToMove > 0 && !batches.isEmpty()) {
+            StockBatch chosenBatch = strategy.selectBatch(batches);
+            if (chosenBatch == null) {
+                throw new IllegalStateException("Shelf strategy returned null batch unexpectedly.");
+            }
 
-			// If this batch is now fully consumed, remove it from the local list
-			if (chosenBatch.getQuantityRemaining() == 0) {
-				batches.remove(chosenBatch);
-			}
-			// Otherwise, update our `batches` list so next iteration re‐evaluates it.
-		}
+            int availableInBatch = chosenBatch.getQuantityRemaining();
+            int usedFromBatch = Math.min(availableInBatch, remainingToMove);
 
-		System.out.printf("Moved %d units of %s to shelf%n", qtyToMove - remainingToMove, productCode);
-	}
+            chosenBatch.setQuantityRemaining(availableInBatch - usedFromBatch);
+            batchRepository.updateQuantity(chosenBatch.getId(), chosenBatch.getQuantityRemaining());
 
-	// deduct purchased items from shelf and alert if low
+            shelfRepository.upsertQuantity(productCode, usedFromBatch); 
+            System.out.printf("Moved %d units from batch %d to shelf for %s.%n", usedFromBatch, chosenBatch.getId(), productCode);
 
-	public void deductFromShelf(String productCode, int qty) {
-		shelfRepository.deductQuantity(productCode, qty);
-		int remain = shelfRepository.getQuantity(productCode);
-		if (remain < 50) {
-			notifyLow(productCode, remain);
-		}
-	}
-	
-	public int getQuantityOnShelf(String productCode) {
-	    return shelfRepository.getQuantity(productCode);
-	}
+            remainingToMove -= usedFromBatch;
+
+            if (chosenBatch.getQuantityRemaining() == 0) {
+                batches.remove(chosenBatch);
+            }
+        }
+        System.out.printf("Successfully moved %d units of %s to shelf.%n", qtyToMove, productCode);
+    }
+
+    public void deductFromShelf(String productCode, int qty) {
+        if (productCode == null || productCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Product code cannot be empty.");
+        }
+        if (qty <= 0) {
+            throw new IllegalArgumentException("Quantity to deduct must be positive.");
+        }
+
+        int currentShelfQuantity = shelfRepository.getQuantity(productCode);
+        if (currentShelfQuantity < qty) {
+            throw new IllegalArgumentException(String.format("Insufficient stock on shelf for %s. Available: %d, Requested: %d.", productCode, currentShelfQuantity, qty));
+        }
+
+        shelfRepository.deductQuantity(productCode, qty);
+        int remain = shelfRepository.getQuantity(productCode); 
+        System.out.printf("Deducted %d units of %s from shelf. Remaining: %d.%n", qty, productCode, remain);
+
+        if (remain < 50) { 
+            notifyLow(productCode, remain);
+        }
+    }
+
+    public int getQuantityOnShelf(String productCode) {
+        if (productCode == null || productCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Product code cannot be empty.");
+        }
+        return shelfRepository.getQuantity(productCode);
+    }
 }

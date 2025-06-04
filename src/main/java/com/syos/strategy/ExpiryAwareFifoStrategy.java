@@ -1,10 +1,10 @@
 package com.syos.strategy;
 
-import com.syos.model.StockBatch;
-
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
+
+import com.syos.model.StockBatch;
 
 
 public class ExpiryAwareFifoStrategy implements ShelfStrategy {
@@ -31,7 +31,7 @@ public class ExpiryAwareFifoStrategy implements ShelfStrategy {
             return bestSafe;
         }
 
-  
+
         StockBatch oldest = null;
         for (StockBatch batch : batches) {
             if (oldest == null

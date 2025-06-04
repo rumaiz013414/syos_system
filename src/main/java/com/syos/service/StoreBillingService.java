@@ -37,8 +37,9 @@ public class StoreBillingService {
 		while (true) {
 			System.out.print("\n Enter the product code : ");
 			String productCode = inputScanner.nextLine().trim();
-			if ("done".equalsIgnoreCase(productCode))
+			if ("done".equalsIgnoreCase(productCode)) {
 				break;
+			}
 
 			Product product = productRepo.findByCode(productCode);
 			if (product == null) {

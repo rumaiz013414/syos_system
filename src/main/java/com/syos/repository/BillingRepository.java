@@ -1,14 +1,14 @@
 package com.syos.repository;
 
-import com.syos.db.DatabaseManager;
-import com.syos.model.Bill;
-import com.syos.model.BillItem;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+
+import com.syos.db.DatabaseManager;
+import com.syos.model.Bill;
+import com.syos.model.BillItem;
 
 public class BillingRepository {
 
@@ -52,7 +52,7 @@ public class BillingRepository {
 					psItem.setString(2, item.getProduct().getCode());
 					psItem.setInt(3, item.getQuantity());
 					psItem.setDouble(4, item.getTotalPrice());
-					psItem.setDouble(5, item.getDiscountAmount()); 
+					psItem.setDouble(5, item.getDiscountAmount());
 					psItem.addBatch();
 				}
 				psItem.executeBatch();

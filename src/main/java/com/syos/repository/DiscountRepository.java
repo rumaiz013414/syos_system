@@ -1,16 +1,20 @@
 package com.syos.repository;
 
-import com.syos.db.DatabaseManager;
-import com.syos.model.Discount;
-import com.syos.enums.DiscountType;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.syos.db.DatabaseManager;
+import com.syos.enums.DiscountType;
+import com.syos.model.Discount;
+
 public class DiscountRepository {
-	
+
 	public Discount findById(int discountId) {
         String sql = """
             SELECT id, name, type, value, start_date, end_date
@@ -37,7 +41,7 @@ public class DiscountRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Error finding discount by ID: " + discountId, e);
         }
-        return null; 
+        return null;
     }
 
     public List<Discount> findActiveDiscounts(String productCode, LocalDate date) {
@@ -110,7 +114,7 @@ public class DiscountRepository {
         }
     }
 
-   
+
     public void linkProductToDiscount(String productCode, int discountId) {
         String sql = """
                 INSERT INTO product_discounts (product_code, discount_id)

@@ -1,12 +1,12 @@
 package com.syos.strategy;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import com.syos.model.Discount;
 import com.syos.model.Product;
 import com.syos.repository.DiscountRepository;
 import com.syos.singleton.InventoryManager;
-
-import java.time.LocalDate;
-import java.util.List;
 
 public class DiscountPricingStrategy implements PricingStrategy {
 	private final PricingStrategy basePriceStrategy;

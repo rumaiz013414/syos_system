@@ -1,31 +1,34 @@
 package com.syos.service;
 
+import java.util.Scanner;
+
 import com.syos.model.Discount;
+import com.syos.model.Product;
 import com.syos.repository.DiscountRepository;
 import com.syos.repository.ProductRepository;
 
-import java.util.Scanner;
-
 public class DiscountAssignmentService {
 	private final Scanner scanner;
-	private final DiscountRepository discountRepo = new DiscountRepository();
-	private final ProductRepository productRepo = new ProductRepository();
+	private final DiscountRepository discountRepo;
+	private final ProductRepository productRepo;
 
-	public DiscountAssignmentService(Scanner scanner) {
+	public DiscountAssignmentService(Scanner scanner, DiscountRepository discountRepo, ProductRepository productRepo) {
 		this.scanner = scanner;
+		this.discountRepo = discountRepo;
+		this.productRepo = productRepo;
 	}
 
 	public void assignDiscountToProduct() {
 		System.out.println("\n=== Assign Existing Discount to Product ===");
-
-		// 1) Product code
 		System.out.print("Enter product code: ");
 		String productCode = scanner.nextLine().trim();
 		if (productCode.isEmpty()) {
 			System.out.println("Product code cannot be empty.");
 			return;
 		}
-		if (productRepo.findByCode(productCode) == null) {
+
+		Product product = productRepo.findByCode(productCode);
+		if (product == null) {
 			System.out.println("No such product: " + productCode);
 			return;
 		}
@@ -39,7 +42,6 @@ public class DiscountAssignmentService {
 				return;
 			}
 
-			// ADDED VALIDATION: Check if the discount ID exists
 			Discount existingDiscount = discountRepo.findById(discountId);
 			if (existingDiscount == null) {
 				System.out.println("No discount found with ID: " + discountId);
@@ -60,7 +62,6 @@ public class DiscountAssignmentService {
 			discountRepo.linkProductToDiscount(productCode, discountId);
 			System.out.printf("Discount ID %d assigned to product %s.%n", discountId, productCode);
 		} catch (RuntimeException e) {
-
 			System.out.println("Failed to assign discount: " + e.getMessage());
 			e.printStackTrace();
 		}
