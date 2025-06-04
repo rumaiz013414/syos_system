@@ -30,6 +30,11 @@ public class InventoryManager {
 		}
 		return instance;
 	}
+//	public static synchronized void init(ShelfStrategy strategy) {
+//		if (instance == null) {
+//			instance = new InventoryManager(strategy, new StockBatchRepository(), new ShelfStockRepository());
+//		}
+//	}
 
 	public static synchronized void resetInstance() {
 		instance = null;
@@ -175,7 +180,7 @@ public class InventoryManager {
 		return batchRepository.findAllExpiringBatches(daysThreshold);
 	}
 
-	// discard a specific quantity from a batch
+	// discard a specific quantity from a batch (for
 	public void discardBatchQuantity(int batchId, int quantityToDiscard) {
 		StockBatch batch = batchRepository.findById(batchId);
 		if (batch == null) {

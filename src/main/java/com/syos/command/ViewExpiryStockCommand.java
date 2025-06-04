@@ -4,8 +4,6 @@ import com.syos.model.StockBatch;
 import com.syos.singleton.InventoryManager;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Map;
-import java.util.HashMap;
 
 public class ViewExpiryStockCommand implements Command {
     private final InventoryManager inventoryManager;
