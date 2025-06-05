@@ -1,24 +1,36 @@
 package com.syos.model;
 
+import com.syos.enums.UserType;
+
 public class Customer extends User {
 	private final String firstName;
 	private final String lastName;
+	private final UserType role;
 
 	private Customer(CustomerBuilder b) {
 		super(b.email, b.password);
 		this.firstName = b.firstName;
 		this.lastName = b.lastName;
+		this.role = UserType.CUSTOMER;
 	}
 
 	public Customer(String email, String password, String firstName, String lastName) {
 		super(email, password);
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.role = UserType.CUSTOMER;
+	}
+
+	public Customer(String firstName, String lastName, String email, String password, UserType role) {
+		super(email, password);
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.role = role;
 	}
 
 	@Override
-	public String getRole() {
-		return "CUSTOMER";
+	public UserType getRole() {
+		return role;
 	}
 
 	public String getFirstName() {

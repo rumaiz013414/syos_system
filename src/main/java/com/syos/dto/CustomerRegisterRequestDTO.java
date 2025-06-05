@@ -1,20 +1,22 @@
 package com.syos.dto;
 
+import com.syos.enums.UserType;
+
 public class CustomerRegisterRequestDTO {
 	private final String firstName;
 	private final String lastName;
 	private final String email;
 	private final String password;
-	private final String userType;
+	private final UserType role;
 
 	public CustomerRegisterRequestDTO(String firstName, String lastName, String email, String password,
-			String userType) {
+			UserType customer) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
 		this.password = password;
-		this.userType = userType;
+		this.role = customer;
 	}
 
 	public String getFirstName() {
@@ -33,8 +35,8 @@ public class CustomerRegisterRequestDTO {
 		return password;
 	}
 
-	public String getUserType() {
-		return userType;
+	public UserType getUserType() {
+		return role;
 	}
 
 }

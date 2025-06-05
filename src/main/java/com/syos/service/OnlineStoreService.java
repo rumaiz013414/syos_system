@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Scanner;
 
 import com.syos.dto.CustomerRegisterRequestDTO;
+import com.syos.enums.UserType;
 import com.syos.model.Customer;
 import com.syos.model.Product;
 import com.syos.repository.CustomerRepository;
 import com.syos.repository.ProductRepository;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class OnlineStoreService {
 	private final Scanner scanner = new Scanner(System.in);
@@ -70,13 +72,13 @@ public class OnlineStoreService {
 		System.out.print("Password: ");
 		String password = scanner.nextLine().trim();
 
-		var req = new CustomerRegisterRequestDTO(firstName, lastName, email, password, "CUSTOMER");
+		var req = new CustomerRegisterRequestDTO(firstName, lastName, email, password, UserType.CUSTOMER);
 		try {
 			Customer customer = registrationService.register(req);
 			System.out.printf(" Registered: %s (%s)%n", customer.getFullName(), customer.getEmail());
 			return customer;
 		} catch (Exception e) {
-			System.err.println("❌ Registration failed: " + e.getMessage());
+			System.err.println(" Registration failed: " + e.getMessage());
 			return null;
 		}
 	}
@@ -90,11 +92,11 @@ public class OnlineStoreService {
 
 		Customer customer = customerRepository.findByEmail(email);
 		if (customer == null) {
-			System.out.println(" Email not registered.");
+			System.out.println(" Invalid email.");
 			return null;
 		}
 
-		if (!customer.getPassword().equals(password)) {
+		if (!BCrypt.checkpw(password, customer.getPassword())) {
 			System.out.println(" Incorrect password.");
 			return null;
 		}

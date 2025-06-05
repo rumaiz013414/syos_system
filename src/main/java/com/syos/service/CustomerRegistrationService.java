@@ -1,42 +1,33 @@
 package com.syos.service;
 
-import java.util.regex.Pattern;
-
 import com.syos.dto.CustomerRegisterRequestDTO;
 import com.syos.model.Customer;
 import com.syos.repository.CustomerRepository;
+import org.mindrot.jbcrypt.BCrypt;
 
-public class CustomerRegistrationService extends RegistrationService<Customer> {
+public class CustomerRegistrationService {
 
-	private final CustomerRepository repo = new CustomerRepository();
+	private final CustomerRepository customerRepository;
 
-	private static final Pattern EMAIL_REGEX = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+	public CustomerRegistrationService() {
+		this.customerRepository = new CustomerRepository();
+	}
 
-	@Override
-	protected void validate(CustomerRegisterRequestDTO req) {
-		if (!EMAIL_REGEX.matcher(req.getEmail()).matches()) {
-			throw new IllegalArgumentException("Invalid email format");
+	public Customer register(CustomerRegisterRequestDTO request) throws Exception {
+		if (request.getEmail() == null || request.getEmail().isEmpty()) {
+			throw new IllegalArgumentException("Email cannot be empty.");
 		}
-		if (req.getPassword().length() < 6) {
-			throw new IllegalArgumentException("Password too short");
+		if (request.getPassword() == null || request.getPassword().isEmpty()) {
+			throw new IllegalArgumentException("Password cannot be empty.");
 		}
-	}
-
-	@Override
-	protected void checkUnique(CustomerRegisterRequestDTO req) {
-		if (repo.existsByEmail(req.getEmail())) {
-			throw new IllegalStateException("Email already registered");
+		if (customerRepository.existsByEmail(request.getEmail())) {
+			throw new Exception("Email '" + request.getEmail() + "' is already registered.");
 		}
-	}
+		String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
+		Customer newCustomer = new Customer(request.getFirstName(), request.getFirstName(),
+				request.getEmail().toLowerCase(), hashedPassword, request.getUserType());
 
-	@Override
-	protected Customer createUser(CustomerRegisterRequestDTO req) {
-		return (Customer) com.syos.factory.UserFactory.createUser(req);
+		customerRepository.save(newCustomer);
+		return newCustomer;
 	}
-
-	@Override
-	protected void save(Customer user) {
-		repo.save(user);
-	}
-
 }

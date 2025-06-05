@@ -2,6 +2,8 @@ package com.syos.model;
 
 import java.util.UUID;
 
+import com.syos.enums.UserType;
+
 public abstract class User {
 	private final UUID id;
 	private final String email;
@@ -25,5 +27,5 @@ public abstract class User {
 		return password;
 	}
 
-	public abstract String getRole();
+	public abstract UserType getRole();
 }
