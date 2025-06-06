@@ -167,6 +167,6 @@ public class StoreBillingService {
 				break;
 			}
 		}
-		System.out.println("Exiting billing service. Goodbye!");
+		System.out.println("Exiting billing");
 	}
 }
