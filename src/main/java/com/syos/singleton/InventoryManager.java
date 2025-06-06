@@ -143,7 +143,7 @@ public class InventoryManager {
 	}
 
 	public List<StockBatch> getBatchesForProduct(String productCode) {
-		return batchRepository.findByProduct(productCode);
+		return batchRepository.findByProductAllBatches(productCode);
 	}
 
 	public List<String> getAllProductCodes() {

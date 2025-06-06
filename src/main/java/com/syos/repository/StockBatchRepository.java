@@ -38,6 +38,29 @@ public class StockBatchRepository {
 		return out;
 	}
 
+	public List<StockBatch> findByProductAllBatches(String code) {
+		String sql = """
+				    SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
+				    FROM stock_batches
+				    WHERE product_code = ?
+				""";
+		List<StockBatch> out = new ArrayList<>();
+		try (Connection conn = DatabaseManager.getInstance().getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql)) {
+
+			ps.setString(1, code);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				out.add(new StockBatch(rs.getInt("id"), rs.getString("product_code"),
+						rs.getDate("purchase_date").toLocalDate(), rs.getDate("expiry_date").toLocalDate(),
+						rs.getInt("quantity_remaining")));
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("Error loading all stock batches for product", e);
+		}
+		return out;
+	}
+
 	// update the remaining quantity on a batch after moving to shelf.
 	public void updateQuantity(int batchId, int newQty) {
 		String sql = "UPDATE stock_batches SET quantity_remaining = ? WHERE id = ?";
