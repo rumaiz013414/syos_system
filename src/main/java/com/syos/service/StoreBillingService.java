@@ -31,11 +31,12 @@ public class StoreBillingService {
 
 	public void run() {
 		List<BillItem> billItems = new ArrayList<>();
-		System.out.println("\n Type the word 'done' after entering the products to proceed to payment.");
+		System.out.println("\n--- Start New Bill ---");
+		System.out.println("Enter product details. Type 'done' to finish and proceed to payment.");
 
 		// Input loop
 		while (true) {
-			System.out.print("\n Enter the product code : ");
+			System.out.print("\nProduct Code (or 'done'): ");
 			String productCode = inputScanner.nextLine().trim();
 			if ("done".equalsIgnoreCase(productCode)) {
 				break;
@@ -43,65 +44,103 @@ public class StoreBillingService {
 
 			Product product = productReposiotry.findByCode(productCode);
 			if (product == null) {
-				System.out.println(" Code not found.");
+				System.out.println("Error: Product code not found. Please try again.");
 				continue;
 			}
 
-			// Check if stock is empty
-			if (inventoryManager.getAvailableStock(product.getCode()) == 0) {
-				System.out.println(" Product is out of stock. Please choose another item.");
-				continue; // Skip this input and ask for the next product
+			int availableStock = inventoryManager.getAvailableStock(product.getCode());
+			if (availableStock == 0) {
+				System.out.println("Product is currently out of stock. Please choose another item.");
+				continue;
 			}
 
-			System.out.print("\n Quantity: ");
-			int quantity = Integer.parseInt(inputScanner.nextLine().trim());
+			System.out.print("Enter Quantity: ");
+			int quantity;
+			try {
+				quantity = Integer.parseInt(inputScanner.nextLine().trim());
+				if (quantity <= 0) {
+					System.out.println("Quantity must be a positive number.");
+					continue;
+				}
+			} catch (NumberFormatException e) {
+				System.out.println("Invalid quantity. Please enter a number.");
+				continue;
+			}
+
+			if (quantity > availableStock) {
+				System.out.printf("Insufficient stock for %s. Only %d available. Please enter a lower quantity.%n",
+						product.getName(), availableStock);
+				continue;
+			}
+
 			billItems.add(billItemFactory.create(product, quantity));
+			System.out.printf("Added %d x %s to bill.%n", quantity, product.getName());
 		}
 
 		if (billItems.isEmpty()) {
-			System.out.println("No items entered. Exiting.");
+			System.out.println("No items were added to the bill. Exiting billing process.");
 			return;
 		}
 
 		// Compute total
 		double totalDue = billItems.stream().mapToDouble(BillItem::getTotalPrice).sum();
-		System.out.printf("\n Total due: %.2f\n", totalDue);
+		System.out.printf("\n--- Order Summary ---%n");
+		System.out.printf("Total amount due: %.2f%n", totalDue);
 
-		System.out.print("\n Cash tendered: ");
-		double cashTendered = Double.parseDouble(inputScanner.nextLine().trim());
+		System.out.print("Cash tendered: ");
+		double cashTendered;
+		try {
+			cashTendered = Double.parseDouble(inputScanner.nextLine().trim());
+			if (cashTendered < totalDue) {
+				System.out.println("Cash tendered is less than total due. Please provide enough cash.");
+				return; // Or loop until enough cash is tendered
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("Invalid amount. Please enter a numeric value for cash tendered.");
+			return;
+		}
 
 		// Build and persist bill
 		int serialNumber = billRepository.nextSerial();
 		Bill bill = new Bill.BillBuilder(serialNumber, billItems).withCashTendered(cashTendered).build();
 
 		billRepository.save(bill);
+		System.out.println("\nBill saved successfully!");
 
-		// Update stock
+		// Update stock in inventory
 		for (BillItem item : billItems) {
 			inventoryManager.deductFromShelf(item.getProduct().getCode(), item.getQuantity());
 		}
 
-		// Display bill summary
-		System.out.println("\n Bill #" + bill.getSerialNumber() + " — " + bill.getBillDate());
+		// Display final bill summary
+		System.out.println("\n--- Final Bill #" + bill.getSerialNumber() + " ---");
+		System.out.println("Date: " + bill.getBillDate());
+		System.out.println("---------------------------------------------------------------------------");
+		System.out.printf("%-25s %-10s %-10s %-10s %-10s%n", "Item", "Qty", "Unit Price", "Subtotal", "Discount");
+		System.out.println("---------------------------------------------------------------------------");
 
 		for (BillItem item : billItems) {
 			String productName = item.getProduct().getName();
 			int quantity = item.getQuantity();
 			double unitPrice = item.getProduct().getPrice();
-			double calculatedPrice = unitPrice * quantity;
-			double totalPrice = item.getTotalPrice();
+			double calculatedPrice = unitPrice * quantity; 
+			double totalPrice = item.getTotalPrice(); 
 			double discountAmount = item.getDiscountAmount();
 
 			if (discountAmount > 0) {
-				double netTotal = totalPrice;
-				System.out.printf("  %s x%d @ %.2f = %.2f (Discount: %.2f | Net: %.2f)%n", productName, quantity,
-						unitPrice, calculatedPrice, discountAmount, netTotal);
+				System.out.printf("%-25s %-10d %-10.2f %-10.2f %-10.2f%n", productName, quantity, unitPrice,
+						calculatedPrice, discountAmount);
+				System.out.printf("%-25s %-10s %-10s %-10s %-10.2f (Net)%n", "", "", "", "", totalPrice);
 			} else {
-				System.out.printf("  %s x%d @ %.2f = %.2f%n", productName, quantity, unitPrice, totalPrice);
+				System.out.printf("%-25s %-10d %-10.2f %-10.2f %-10s%n", productName, quantity, unitPrice, totalPrice,
+						"-");
 			}
 		}
-
-		System.out.printf("\n Total: %.2f | Cash tendered: %.2f | Change: %.2f%n", bill.getTotalAmount(),
-				bill.getCashTendered(), bill.getChangeReturned());
+		System.out.println("---------------------------------------------------------------------------");
+		System.out.printf("%-50s Total: %.2f%n", "", bill.getTotalAmount());
+		System.out.printf("%-50s Cash Tendered: %.2f%n", "", bill.getCashTendered());
+		System.out.printf("%-50s Change Returned: %.2f%n", "", bill.getChangeReturned());
+		System.out.println("---------------------------------------------------------------------------");
+		System.out.println("Thank you for your purchase!");
 	}
 }
