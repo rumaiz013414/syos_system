@@ -15,7 +15,7 @@ public class ViewAllInventoryStocksCommand implements Command {
 
 	@Override
 	public void execute() {
-		System.out.println("\n--- All Back-store Stock Batches ---");
+		System.out.println("\n--- All Inventory Stock Batches ---");
 		List<String> allProductCodes = inventoryManager.getAllProductCodes();
 
 		if (allProductCodes.isEmpty()) {

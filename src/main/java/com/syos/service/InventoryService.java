@@ -64,7 +64,7 @@ public class InventoryService {
 			System.out.println("9) Remove close to expiry stock from shelf");
 			System.out.println("10) View all expiring back-store batches");
 			System.out.println("11) Discard quantity from back-store batch");
-			System.out.println("12) View all back-store stock");
+			System.out.println("12) View all Inventory stock");
 			System.out.println("13) Exit");
 			System.out.print("Choose an option: ");
 
