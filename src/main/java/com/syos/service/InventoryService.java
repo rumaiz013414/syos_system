@@ -40,31 +40,35 @@ public class InventoryService {
 		commandMap.put("2", new ViewAllProductsCommand(productRepository, scanner));
 		commandMap.put("3", new ReceiveStockCommand(inventoryManager, scanner));
 		commandMap.put("4", new MoveToShelfCommand(inventoryManager, scanner));
-		commandMap.put("5", new CreateDiscountCommand(scanner, discountRepository));
-		commandMap.put("6", new AssignDiscountCommand(scanner, discountRepository, productRepository));
-		commandMap.put("7", new ViewStockCommand(inventoryManager, scanner));
-		commandMap.put("8", new ViewExpiryStockCommand(inventoryManager, scanner));
-		commandMap.put("9", new RemoveExpiryStockCommand(inventoryManager, scanner));
-		commandMap.put("10", new ViewExpiringBatchesCommand(inventoryManager, scanner));
-		commandMap.put("11", new DiscardExpiringBatchesCommand(inventoryManager, scanner));
-		commandMap.put("12", new ViewAllInventoryStocksCommand(inventoryManager, scanner));
+		commandMap.put("5", new ViewStockCommand(inventoryManager, scanner));
+		commandMap.put("6", new ViewAllInventoryStocksCommand(inventoryManager, scanner));
+		commandMap.put("7", new ViewExpiryStockCommand(inventoryManager, scanner));
+		commandMap.put("8", new RemoveExpiryStockCommand(inventoryManager, scanner));
+		commandMap.put("9", new ViewExpiringBatchesCommand(inventoryManager, scanner));
+		commandMap.put("10", new DiscardExpiringBatchesCommand(inventoryManager, scanner));
+		commandMap.put("11", new CreateDiscountCommand(scanner, discountRepository));
+		commandMap.put("12", new AssignDiscountCommand(scanner, discountRepository, productRepository));
 	}
 
 	public void run() {
 		while (true) {
 			System.out.println("\n=== Inventory Menu ===");
-			System.out.println("1) Add product");
+			System.out.println("1) Add new product");
 			System.out.println("2) View all registered products");
-			System.out.println("3) Receive stock to inventory");
-			System.out.println("4) Move to shelf");
-			System.out.println("5) Create new discount");
-			System.out.println("6) Assign discount to product");
-			System.out.println("7) View all shelf stock");
-			System.out.println("8) View close to expiry shelf stock");
-			System.out.println("9) Remove close to expiry stock from shelf");
-			System.out.println("10) View all expiring back-store batches");
-			System.out.println("11) Discard quantity from back-store batch");
-			System.out.println("12) View all Inventory stock");
+			System.out.println();
+			System.out.println("3) Receive stocks to inventory");
+			System.out.println("4) Move stocks from inventory to shelf");
+			System.out.println();
+			System.out.println("5) View all shelf stocks");
+			System.out.println("6) View all inventory stocks");
+			System.out.println("7) View close to expiry shelf stocks");
+			System.out.println("8) Remove close to expiry stock from shelf");
+			System.out.println("9) View all expiring inventory batches");
+			System.out.println("10) Discard quantity from inventory batch");
+			System.out.println();
+			System.out.println("11) Create a new discount");
+			System.out.println("12) Assign discount to products");
+			System.out.println();
 			System.out.println("13) Exit");
 			System.out.print("Choose an option: ");
 
