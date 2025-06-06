@@ -13,10 +13,13 @@ import com.syos.command.ReceiveStockCommand;
 import com.syos.command.ViewStockCommand;
 import com.syos.command.ViewExpiryStockCommand;
 import com.syos.command.RemoveExpiryStockCommand;
+import com.syos.command.UnassignDiscountCommand;
 import com.syos.command.ViewAllInventoryStocksCommand;
 import com.syos.command.ViewExpiringBatchesCommand;
 import com.syos.command.DiscardExpiringBatchesCommand;
 import com.syos.command.ViewAllProductsCommand;
+import com.syos.command.ViewAllProductsWithDiscountsCommand;
+import com.syos.command.ViewAllDiscountsCommand;
 
 import com.syos.repository.DiscountRepository;
 import com.syos.repository.ProductRepository;
@@ -29,12 +32,14 @@ public class InventoryService {
 	private final Map<String, Command> commandMap = new HashMap<>();
 
 	public InventoryService() {
+		ProductRepository productRepository = new ProductRepository();
+		DiscountRepository discountRepository = new DiscountRepository();
+
 		this.inventoryManager = InventoryManager.getInstance(new ExpiryAwareFifoStrategy());
+
 		inventoryManager.addObserver(new StockAlertService(50));
 
 		ProductService productService = new ProductService();
-		ProductRepository productRepository = new ProductRepository();
-		DiscountRepository discountRepository = new DiscountRepository();
 
 		commandMap.put("1", new AddProductCommand(productService, scanner, productRepository));
 		commandMap.put("2", new ViewAllProductsCommand(productRepository, scanner));
@@ -48,6 +53,9 @@ public class InventoryService {
 		commandMap.put("10", new DiscardExpiringBatchesCommand(inventoryManager, scanner));
 		commandMap.put("11", new CreateDiscountCommand(scanner, discountRepository));
 		commandMap.put("12", new AssignDiscountCommand(scanner, discountRepository, productRepository));
+		commandMap.put("13", new ViewAllDiscountsCommand(discountRepository, scanner));
+		commandMap.put("14", new ViewAllProductsWithDiscountsCommand(discountRepository, productRepository));
+		commandMap.put("15", new UnassignDiscountCommand(scanner, discountRepository, productRepository));
 	}
 
 	public void run() {
@@ -68,12 +76,15 @@ public class InventoryService {
 			System.out.println();
 			System.out.println("11) Create a new discount");
 			System.out.println("12) Assign discount to products");
+			System.out.println("13) View all discounts");
+			System.out.println("14) View all products with discounts");
+			System.out.println("15) Unassign discount from product");
 			System.out.println();
-			System.out.println("13) Exit");
+			System.out.println("16) Exit");
 			System.out.print("Choose an option: ");
 
 			String choice = scanner.nextLine().trim();
-			if ("13".equals(choice)) {
+			if ("16".equals(choice)) {
 				System.out.println("Exiting Inventory Menu.");
 				break;
 			}
