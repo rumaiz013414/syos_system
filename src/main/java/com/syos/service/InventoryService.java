@@ -13,9 +13,10 @@ import com.syos.command.ReceiveStockCommand;
 import com.syos.command.ViewStockCommand;
 import com.syos.command.ViewExpiryStockCommand;
 import com.syos.command.RemoveExpiryStockCommand;
+import com.syos.command.ViewAllInventoryStocksCommand;
 import com.syos.command.ViewExpiringBatchesCommand;
 import com.syos.command.DiscardExpiringBatchesCommand;
-import com.syos.command.ViewAllProductsCommand; 
+import com.syos.command.ViewAllProductsCommand;
 
 import com.syos.repository.DiscountRepository;
 import com.syos.repository.ProductRepository;
@@ -46,7 +47,7 @@ public class InventoryService {
 		commandMap.put("9", new RemoveExpiryStockCommand(inventoryManager, scanner));
 		commandMap.put("10", new ViewExpiringBatchesCommand(inventoryManager, scanner));
 		commandMap.put("11", new DiscardExpiringBatchesCommand(inventoryManager, scanner));
-
+		commandMap.put("12", new ViewAllInventoryStocksCommand(inventoryManager, scanner));
 	}
 
 	public void run() {
@@ -63,11 +64,12 @@ public class InventoryService {
 			System.out.println("9) Remove close to expiry stock from shelf");
 			System.out.println("10) View all expiring back-store batches");
 			System.out.println("11) Discard quantity from back-store batch");
-			System.out.println("12) Exit");
+			System.out.println("12) View all back-store stock");
+			System.out.println("13) Exit");
 			System.out.print("Choose an option: ");
 
 			String choice = scanner.nextLine().trim();
-			if ("12".equals(choice)) {
+			if ("13".equals(choice)) {
 				System.out.println("Exiting Inventory Menu.");
 				break;
 			}
