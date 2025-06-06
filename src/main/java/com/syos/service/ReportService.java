@@ -42,12 +42,18 @@ public class ReportService {
 		System.out.println("\n--- Daily Sales Report ---");
 		LocalDate reportDate = null;
 		while (reportDate == null) {
-			System.out.print("Enter date for report (YYYY-MM-DD): ");
+
+			System.out.print("Enter date for report (YYYY-MM-DD) or press Enter for today's report: ");
 			String dateString = scanner.nextLine().trim();
-			try {
-				reportDate = LocalDate.parse(dateString);
-			} catch (DateTimeParseException e) {
-				System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+
+			if (dateString.isEmpty()) {
+				reportDate = LocalDate.now(); 
+			} else {
+				try {
+					reportDate = LocalDate.parse(dateString);
+				} catch (DateTimeParseException e) {
+					System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+				}
 			}
 		}
 
@@ -102,9 +108,7 @@ public class ReportService {
 			}
 			System.out.println("-----------------------------------------------------------------------------------");
 		}
-
-		System.out.println("\n===================================================================================");
-		System.out.printf("TOTAL REVENUE FOR %s: %.2f%n", reportDate.format(DateTimeFormatter.ISO_DATE),
+		System.out.printf("Total revenue for %s: %.2f%n", reportDate.format(DateTimeFormatter.ISO_DATE),
 				totalDailyRevenue);
 		System.out.println("===================================================================================");
 	}
