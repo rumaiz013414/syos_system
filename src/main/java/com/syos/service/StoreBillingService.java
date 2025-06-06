@@ -16,10 +16,10 @@ import com.syos.strategy.ExpiryAwareFifoStrategy;
 import com.syos.strategy.NoDiscountStrategy;
 
 public class StoreBillingService {
-	private final ProductRepository productRepo = new ProductRepository();
-	private final BillingRepository billRepo = new BillingRepository();
-	private final BillItemFactory billItemFactory =
-	    new BillItemFactory(new DiscountPricingStrategy(new NoDiscountStrategy()));
+	private final ProductRepository productReposiotry = new ProductRepository();
+	private final BillingRepository billRepository = new BillingRepository();
+	private final BillItemFactory billItemFactory = new BillItemFactory(
+			new DiscountPricingStrategy(new NoDiscountStrategy()));
 	private final Scanner inputScanner = new Scanner(System.in);
 	private final InventoryManager inventoryManager;
 	private static final int STOCK_ALERT_THRESHOLD = 50;
@@ -41,7 +41,7 @@ public class StoreBillingService {
 				break;
 			}
 
-			Product product = productRepo.findByCode(productCode);
+			Product product = productReposiotry.findByCode(productCode);
 			if (product == null) {
 				System.out.println(" Code not found.");
 				continue;
@@ -58,21 +58,17 @@ public class StoreBillingService {
 		}
 
 		// Compute total
-		double totalDue = billItems.stream()
-		                           .mapToDouble(BillItem::getTotalPrice)
-		                           .sum();
+		double totalDue = billItems.stream().mapToDouble(BillItem::getTotalPrice).sum();
 		System.out.printf("\n Total due: %.2f\n", totalDue);
 
 		System.out.print("\n Cash tendered: ");
 		double cashTendered = Double.parseDouble(inputScanner.nextLine().trim());
 
 		// Build and persist bill
-		int serialNumber = billRepo.nextSerial();
-		Bill bill = new Bill.BillBuilder(serialNumber, billItems)
-		                    .withCashTendered(cashTendered)
-		                    .build();
+		int serialNumber = billRepository.nextSerial();
+		Bill bill = new Bill.BillBuilder(serialNumber, billItems).withCashTendered(cashTendered).build();
 
-		billRepo.save(bill);
+		billRepository.save(bill);
 
 		// Update stock
 		for (BillItem item : billItems) {
@@ -83,20 +79,23 @@ public class StoreBillingService {
 		System.out.println("\n Bill #" + bill.getSerialNumber() + " — " + bill.getBillDate());
 
 		for (BillItem item : billItems) {
-		    String productName = item.getProduct().getName();
-		    int quantity = item.getQuantity();
-		    double totalPrice = item.getTotalPrice();
-		    double discountAmount = item.getDiscountAmount();
+			String productName = item.getProduct().getName();
+			int quantity = item.getQuantity();
+			double unitPrice = item.getProduct().getPrice(); 
+			double calculatedPrice = unitPrice * quantity;
+			double totalPrice = item.getTotalPrice(); 
+			double discountAmount = item.getDiscountAmount();
 
-		    if (discountAmount > 0) {
-		        System.out.printf("  %s x%d = %.2f (Discount Amount: %.2f)%n",
-		                          productName, quantity, totalPrice, discountAmount);
-		    } else {
-		        System.out.printf("  %s x%d = %.2f%n", productName, quantity, totalPrice);
-		    }
+			if (discountAmount > 0) {
+				double netTotal = totalPrice;
+				System.out.printf("  %s x%d @ %.2f = %.2f (Discount: %.2f | Net: %.2f)%n", productName, quantity,
+						unitPrice, calculatedPrice, discountAmount, netTotal);
+			} else {
+				System.out.printf("  %s x%d @ %.2f = %.2f%n", productName, quantity, unitPrice, totalPrice);
+			}
 		}
 
-		System.out.printf("\n Total: %.2f | Cash tendered: %.2f | Change: %.2f%n",
-		                  bill.getTotalAmount(), bill.getCashTendered(), bill.getChangeReturned());
+		System.out.printf("\n Total: %.2f | Cash tendered: %.2f | Change: %.2f%n", bill.getTotalAmount(),
+				bill.getCashTendered(), bill.getChangeReturned());
 	}
 }

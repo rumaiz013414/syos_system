@@ -1,4 +1,3 @@
-// Modified AssignDiscountCommand
 package com.syos.command;
 
 import java.util.Scanner;
