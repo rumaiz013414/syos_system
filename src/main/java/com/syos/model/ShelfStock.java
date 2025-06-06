@@ -1,14 +1,19 @@
 package com.syos.model;
 
+import java.time.LocalDate; // Use LocalDate
+
 public class ShelfStock {
 
 	private Product product;
-	private int quantity;
+	private int batchId;
+	private int quantity; // This will be quantity_on_shelf for this specific batch
+	private LocalDate expiryDate;
 
-	public ShelfStock(Product product, int quantity) {
-		super();
+	public ShelfStock(Product product, int quantity, int batchId, LocalDate expiryDate) {
 		this.product = product;
 		this.quantity = quantity;
+		this.batchId = batchId;
+		this.expiryDate = expiryDate;
 	}
 
 	public Product getProduct() {
@@ -25,6 +30,22 @@ public class ShelfStock {
 
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
+	}
+
+	public int getBatchId() {
+		return batchId;
+	}
+
+	public void setBatchId(int batchId) {
+		this.batchId = batchId;
+	}
+
+	public LocalDate getExpiryDate() {
+		return expiryDate;
+	}
+
+	public void setExpiryDate(LocalDate expiryDate) {
+		this.expiryDate = expiryDate;
 	}
 
 }

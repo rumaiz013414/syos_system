@@ -14,12 +14,11 @@ import com.syos.model.StockBatch;
 
 public class StockBatchRepository {
 
-	// fetch all batches for a product that still have quantity.
 	public List<StockBatch> findByProduct(String code) {
 		String sql = """
-				    SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
-				    FROM stock_batches
-				    WHERE product_code = ? AND quantity_remaining > 0
+				SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
+				FROM stock_batches
+				WHERE product_code = ? AND quantity_remaining > 0
 				""";
 		List<StockBatch> out = new ArrayList<>();
 		try (Connection conn = DatabaseManager.getInstance().getConnection();
@@ -40,9 +39,9 @@ public class StockBatchRepository {
 
 	public List<StockBatch> findByProductAllBatches(String code) {
 		String sql = """
-				    SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
-				    FROM stock_batches
-				    WHERE product_code = ?
+				SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
+				FROM stock_batches
+				WHERE product_code = ?
 				""";
 		List<StockBatch> out = new ArrayList<>();
 		try (Connection conn = DatabaseManager.getInstance().getConnection();
@@ -61,7 +60,6 @@ public class StockBatchRepository {
 		return out;
 	}
 
-	// update the remaining quantity on a batch after moving to shelf.
 	public void updateQuantity(int batchId, int newQty) {
 		String sql = "UPDATE stock_batches SET quantity_remaining = ? WHERE id = ?";
 		try (Connection conn = DatabaseManager.getInstance().getConnection();
@@ -112,7 +110,6 @@ public class StockBatchRepository {
 		return productCodes;
 	}
 
-	// fetch batches that are close to expiry for a specific product
 	public List<StockBatch> findExpiringBatches(String productCode, int daysThreshold) {
 		String sql = """
 				SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
@@ -138,7 +135,6 @@ public class StockBatchRepository {
 		return out;
 	}
 
-	// fetch aLL batches that are close to expire
 	public List<StockBatch> findAllExpiringBatches(int daysThreshold) {
 		String sql = """
 				SELECT id, product_code, purchase_date, expiry_date, quantity_remaining
@@ -182,6 +178,17 @@ public class StockBatchRepository {
 		} catch (SQLException e) {
 			throw new RuntimeException("Error finding batch by ID", e);
 		}
-		return null; // Return null if not found
+		return null;
+	}
+
+	public void setBatchQuantityToZero(int batchId) {
+		String sql = "UPDATE stock_batches SET quantity_remaining = 0 WHERE id = ?";
+		try (Connection conn = DatabaseManager.getInstance().getConnection();
+			 PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setInt(1, batchId);
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			throw new RuntimeException("Error setting batch quantity to zero for batch ID: " + batchId, e);
+		}
 	}
 }
