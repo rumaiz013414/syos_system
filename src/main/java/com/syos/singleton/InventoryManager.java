@@ -30,11 +30,6 @@ public class InventoryManager {
 		}
 		return instance;
 	}
-//	public static synchronized void init(ShelfStrategy strategy) {
-//		if (instance == null) {
-//			instance = new InventoryManager(strategy, new StockBatchRepository(), new ShelfStockRepository());
-//		}
-//	}
 
 	public static synchronized void resetInstance() {
 		instance = null;
@@ -178,6 +173,10 @@ public class InventoryManager {
 
 	public List<StockBatch> getAllExpiringBatches(int daysThreshold) {
 		return batchRepository.findAllExpiringBatches(daysThreshold);
+	}
+
+	public int getAvailableStock(String productCode) {
+		return shelfRepository.getQuantity(productCode);
 	}
 
 	// discard a specific quantity from a batch (for

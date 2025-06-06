@@ -47,6 +47,12 @@ public class StoreBillingService {
 				continue;
 			}
 
+			// Check if stock is empty
+			if (inventoryManager.getAvailableStock(product.getCode()) == 0) {
+				System.out.println(" Product is out of stock. Please choose another item.");
+				continue; // Skip this input and ask for the next product
+			}
+
 			System.out.print("\n Quantity: ");
 			int quantity = Integer.parseInt(inputScanner.nextLine().trim());
 			billItems.add(billItemFactory.create(product, quantity));
@@ -81,9 +87,9 @@ public class StoreBillingService {
 		for (BillItem item : billItems) {
 			String productName = item.getProduct().getName();
 			int quantity = item.getQuantity();
-			double unitPrice = item.getProduct().getPrice(); 
+			double unitPrice = item.getProduct().getPrice();
 			double calculatedPrice = unitPrice * quantity;
-			double totalPrice = item.getTotalPrice(); 
+			double totalPrice = item.getTotalPrice();
 			double discountAmount = item.getDiscountAmount();
 
 			if (discountAmount > 0) {
