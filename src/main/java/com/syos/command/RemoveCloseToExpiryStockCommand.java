@@ -5,11 +5,11 @@ import com.syos.singleton.InventoryManager;
 import java.util.List;
 import java.util.Scanner;
 
-public class RemoveExpiryStockCommand implements Command {
+public class RemoveCloseToExpiryStockCommand implements Command {
     private final InventoryManager inventoryManager;
     private final Scanner scanner;
 
-    public RemoveExpiryStockCommand(InventoryManager inventoryManager, Scanner scanner) {
+    public RemoveCloseToExpiryStockCommand(InventoryManager inventoryManager, Scanner scanner) {
         this.inventoryManager = inventoryManager;
         this.scanner = scanner;
     }

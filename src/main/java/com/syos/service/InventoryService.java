@@ -10,9 +10,9 @@ import com.syos.command.Command;
 import com.syos.command.CreateDiscountCommand;
 import com.syos.command.MoveToShelfCommand;
 import com.syos.command.ReceiveStockCommand;
+import com.syos.command.RemoveCloseToExpiryStockCommand;
 import com.syos.command.ViewStockCommand;
 import com.syos.command.ViewExpiryStockCommand;
-import com.syos.command.RemoveExpiryStockCommand;
 import com.syos.command.UnassignDiscountCommand;
 import com.syos.command.ViewAllInventoryStocksCommand;
 import com.syos.command.ViewExpiringBatchesCommand;
@@ -23,7 +23,9 @@ import com.syos.command.ViewAllDiscountsCommand;
 
 import com.syos.repository.DiscountRepository;
 import com.syos.repository.ProductRepository;
+
 import com.syos.singleton.InventoryManager;
+
 import com.syos.strategy.ExpiryAwareFifoStrategy;
 
 public class InventoryService {
@@ -48,7 +50,7 @@ public class InventoryService {
 		commandMap.put("5", new ViewStockCommand(inventoryManager, scanner));
 		commandMap.put("6", new ViewAllInventoryStocksCommand(inventoryManager, scanner));
 		commandMap.put("7", new ViewExpiryStockCommand(inventoryManager, scanner));
-		commandMap.put("8", new RemoveExpiryStockCommand(inventoryManager, scanner));
+		commandMap.put("8", new RemoveCloseToExpiryStockCommand(inventoryManager, scanner));
 		commandMap.put("9", new ViewExpiringBatchesCommand(inventoryManager, scanner));
 		commandMap.put("10", new DiscardExpiringBatchesCommand(inventoryManager, scanner));
 		commandMap.put("11", new CreateDiscountCommand(scanner, discountRepository));
@@ -70,7 +72,7 @@ public class InventoryService {
 			System.out.println("5) View all shelf stocks");
 			System.out.println("6) View all inventory stocks");
 			System.out.println("7) View close to expiry shelf stocks");
-			System.out.println("8) Remove close to expiry stock from shelf");
+			System.out.println("8) Discard close to expiry stock from shelf");
 			System.out.println("9) View all expiring inventory batches");
 			System.out.println("10) Discard quantity from inventory batch");
 			System.out.println();

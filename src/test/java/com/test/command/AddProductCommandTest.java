@@ -1,4 +1,4 @@
-package com.test; // Ensure your test package matches where you keep your test files
+package com.test.command; // Ensure your test package matches where you keep your test files
 
 import com.syos.command.AddProductCommand;
 import com.syos.model.Product;

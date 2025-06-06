@@ -1,4 +1,4 @@
-package com.test;
+package com.test.command;
 
 import com.syos.command.AssignDiscountCommand;
 import com.syos.enums.DiscountType; // Make sure this import is present
