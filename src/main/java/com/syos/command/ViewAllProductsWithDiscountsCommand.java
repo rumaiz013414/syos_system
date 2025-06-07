@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public class ViewAllProductsWithDiscountsCommand implements Command {
 	private final DiscountRepository discountRepository;
 	private final ProductRepository productRepository;
+    private final String NL = System.lineSeparator(); // Consistent newline for all outputs
 
 	public ViewAllProductsWithDiscountsCommand(DiscountRepository discountRepository,
 			ProductRepository productRepository) {
@@ -22,7 +23,8 @@ public class ViewAllProductsWithDiscountsCommand implements Command {
 
 	@Override
 	public void execute() {
-		System.out.println("\n--- Products with Active Discounts ---"); // Always print the main title
+        // Use NL for the initial newline for consistency
+		System.out.println(NL + "--- Products with Active Discounts ---");
 
 		List<Product> products = productRepository.findAll();
 
@@ -31,13 +33,16 @@ public class ViewAllProductsWithDiscountsCommand implements Command {
 			return;
 		}
 
-		LocalDate today = LocalDate.now();
+		LocalDate today = LocalDate.now(); // The command uses LocalDate.now()
 		boolean hasDiscountsToDisplay = false;
 
 		// Use StringBuilder only for the rows that will be printed
 		StringBuilder tableRows = new StringBuilder();
 
 		for (Product product : products) {
+            // Important: The `today` variable passed to findDiscountsByProductCode
+            // should match the date used in test mocks if you need to be precise.
+            // For general testing, mocking with any(LocalDate.class) is often sufficient.
 			List<Discount> activeDiscounts = discountRepository.findDiscountsByProductCode(product.getCode(), today);
 
 			if (!activeDiscounts.isEmpty()) {

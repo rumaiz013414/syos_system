@@ -1,4 +1,6 @@
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\CustomerRegistrationService.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\UnassignDiscountCommand.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\RemoveCloseToExpiryStockCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\ViewExpiryStockCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\repository\DiscountRepository.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\AssignDiscountCommand.java
@@ -7,11 +9,11 @@ C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\In
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\factory\BillItemFactory.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\model\StockBatch.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\singleton\InventoryManager.java
-C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\facade\SyosFacade.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\StockAlertService.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\AddProductCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\observer\StockObserver.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\ProductService.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\dto\BillItemReportDTO.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\ViewExpiringBatchesCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\SyosSystem.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\enums\UserType.java
@@ -24,15 +26,18 @@ C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\repository
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\OnlineStoreService.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\DiscardExpiringBatchesCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\dto\CustomerRegisterRequestDTO.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\dto\ReportDTOMapper.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\util\StockBatchIterator.java
-C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\RemoveExpiryStockCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\factory\UserFactory.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\ViewAllInventoryStocksCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\strategy\NoDiscountStrategy.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\strategy\DiscountStrategy.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\ReportService.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\util\Util.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\ViewAllProductsWithDiscountsCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\repository\ProductRepository.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\RegistrationService.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\ViewAllDiscountsCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\MoveToShelfCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\command\ViewAllProductsCommand.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\repository\ShelfStockRepository.java
@@ -45,6 +50,7 @@ C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\model\Prod
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\service\DiscountAssignmentService.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\enums\DiscountType.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\db\DatabaseManager.java
+C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\dto\BillReportDTO.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\util\CommonInputs.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\repository\BillingRepository.java
 C:\Users\rumai\OneDrive\Apiit Work\syos_system\src\main\java\com\syos\model\Discount.java

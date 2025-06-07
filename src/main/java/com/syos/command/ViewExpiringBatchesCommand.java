@@ -8,6 +8,7 @@ import java.util.Scanner;
 public class ViewExpiringBatchesCommand implements Command {
     private final InventoryManager inventoryManager;
     private final Scanner scanner;
+    private final String NL = System.lineSeparator(); // Consistent newline for all outputs
 
     public ViewExpiringBatchesCommand(InventoryManager inventoryManager, Scanner scanner) {
         this.inventoryManager = inventoryManager;
@@ -16,7 +17,8 @@ public class ViewExpiringBatchesCommand implements Command {
 
     @Override
     public void execute() {
-        System.out.println("\n--- View Expiring Stock Batches (Back-Store) ---");
+        // Use NL for the initial newline for consistency
+        System.out.println(NL + "--- View Expiring Stock Batches (Back-Store) ---");
         System.out.print("Enter expiry threshold in days (e.g., 30 for batches expiring in next 30 days): ");
         int daysThreshold;
         try {
@@ -38,9 +40,10 @@ public class ViewExpiringBatchesCommand implements Command {
         }
 
         System.out.printf("%n--- Stock Batches Expiring in Next %d Days ---%n", daysThreshold);
-        System.out.println("--------------------------------------------------------------------------------------------------");
+        // Adjusted separator length to 74 hyphens to match printf width (10+15+15+15+15 = 70 + 4 spaces = 74)
+        System.out.println("--------------------------------------------------------------------------");
         System.out.printf("%-10s %-15s %-15s %-15s %-15s%n", "Batch ID", "Product Code", "Expiry Date", "Purch Date", "Remaining Qty");
-        System.out.println("--------------------------------------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------");
         for (StockBatch batch : expiringBatches) {
             System.out.printf("%-10d %-15s %-15s %-15s %-15d%n",
                     batch.getId(),
@@ -49,6 +52,6 @@ public class ViewExpiringBatchesCommand implements Command {
                     batch.getPurchaseDate(),
                     batch.getQuantityRemaining());
         }
-        System.out.println("--------------------------------------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------");
     }
 }

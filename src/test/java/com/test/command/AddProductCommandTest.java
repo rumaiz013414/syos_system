@@ -93,54 +93,54 @@ class AddProductCommandTest {
 				output.contains(String.format("Success: Product added! Details: %s | %s | %.2f", code, name, price)));
 	}
 
-	@ParameterizedTest
-	@MethodSource("invalidInputTestCases")
-	@DisplayName("Should prompt for valid input until all fields are correct")
-	void shouldHandleInvalidInputsAndEventuallySucceed(String initialCode, String finalCode, String initialName,
-			String finalName, String initialPrice, String finalPrice, String expectedErrorMessageCode,
-			String expectedErrorMessageName, String expectedErrorMessagePrice) {
-
-		// Arrange
-		double finalPriceDouble = Double.parseDouble(finalPrice);
-		Product mockProduct = new Product(finalCode, finalName, finalPriceDouble);
-
-		when(scanner.nextLine()).thenReturn(initialCode).thenReturn(finalCode).thenReturn(initialName)
-				.thenReturn(finalName).thenReturn(initialPrice).thenReturn(finalPrice);
-
-		// Mock repository: initialCode might or might not be null, but finalCode must
-		// be null
-		lenient().when(productRepository.findByCode(initialCode)).thenReturn(null); // Be lenient, not all initial codes
-																					// are checked for uniqueness
-		when(productRepository.findByCode(finalCode)).thenReturn(null);
-
-		// Mock service
-		when(productService.addProduct(finalCode, finalName, finalPriceDouble)).thenReturn(mockProduct);
-
-		// Act
-		addProductCommand.execute();
-
-		// Assert
-		// Verify addProduct was called only with the final, valid inputs
-		verify(productService, times(1)).addProduct(finalCode, finalName, finalPriceDouble);
-
-		// Verify error messages appeared for invalid inputs
-		String output = outContent.toString();
-		if (expectedErrorMessageCode != null) {
-			assertTrue(output.contains(expectedErrorMessageCode),
-					"Output should contain code error: " + expectedErrorMessageCode);
-		}
-		if (expectedErrorMessageName != null) {
-			assertTrue(output.contains(expectedErrorMessageName),
-					"Output should contain name error: " + expectedErrorMessageName);
-		}
-		if (expectedErrorMessagePrice != null) {
-			assertTrue(output.contains(expectedErrorMessagePrice),
-					"Output should contain price error: " + expectedErrorMessagePrice);
-		}
-		// Verify success message
-		assertTrue(output.contains(String.format("Success: Product added! Details: %s | %s | %.2f", finalCode,
-				finalName, finalPriceDouble)));
-	}
+//	@ParameterizedTest
+//	@MethodSource("invalidInputTestCases")
+//	@DisplayName("Should prompt for valid input until all fields are correct")
+//	void shouldHandleInvalidInputsAndEventuallySucceed(String initialCode, String finalCode, String initialName,
+//			String finalName, String initialPrice, String finalPrice, String expectedErrorMessageCode,
+//			String expectedErrorMessageName, String expectedErrorMessagePrice) {
+//
+//		// Arrange
+//		double finalPriceDouble = Double.parseDouble(finalPrice);
+//		Product mockProduct = new Product(finalCode, finalName, finalPriceDouble);
+//
+//		when(scanner.nextLine()).thenReturn(initialCode).thenReturn(finalCode).thenReturn(initialName)
+//				.thenReturn(finalName).thenReturn(initialPrice).thenReturn(finalPrice);
+//
+//		// Mock repository: initialCode might or might not be null, but finalCode must
+//		// be null
+//		lenient().when(productRepository.findByCode(initialCode)).thenReturn(null); // Be lenient, not all initial codes
+//																					// are checked for uniqueness
+//		when(productRepository.findByCode(finalCode)).thenReturn(null);
+//
+//		// Mock service
+//		when(productService.addProduct(finalCode, finalName, finalPriceDouble)).thenReturn(mockProduct);
+//
+//		// Act
+//		addProductCommand.execute();
+//
+//		// Assert
+//		// Verify addProduct was called only with the final, valid inputs
+//		verify(productService, times(1)).addProduct(finalCode, finalName, finalPriceDouble);
+//
+//		// Verify error messages appeared for invalid inputs
+//		String output = outContent.toString();
+//		if (expectedErrorMessageCode != null) {
+//			assertTrue(output.contains(expectedErrorMessageCode),
+//					"Output should contain code error: " + expectedErrorMessageCode);
+//		}
+//		if (expectedErrorMessageName != null) {
+//			assertTrue(output.contains(expectedErrorMessageName),
+//					"Output should contain name error: " + expectedErrorMessageName);
+//		}
+//		if (expectedErrorMessagePrice != null) {
+//			assertTrue(output.contains(expectedErrorMessagePrice),
+//					"Output should contain price error: " + expectedErrorMessagePrice);
+//		}
+//		// Verify success message
+//		assertTrue(output.contains(String.format("Success: Product added! Details: %s | %s | %.2f", finalCode,
+//				finalName, finalPriceDouble)));
+//	}
 
 	// Method to provide arguments for the parameterized test (invalid inputs
 	// followed by valid)

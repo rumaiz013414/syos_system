@@ -2,12 +2,12 @@ package com.syos.dto;
 
 public class BillItemReportDTO {
     private String productName;
-    private String productCode; // Added for completeness if needed
+    private String productCode; 
     private int quantity;
     private double unitPrice;
-    private double calculatedSubtotal; // quantity * unitPrice
+    private double calculatedSubtotal; 
     private double discountAmount;
-    private double netPrice; // total_price for the item after discount
+    private double netPrice; 
 
     // Constructor
     public BillItemReportDTO(String productName, String productCode, int quantity,
