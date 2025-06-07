@@ -1,4 +1,4 @@
-package com.test.model;
+package com.test.builder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

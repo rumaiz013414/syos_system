@@ -1,4 +1,4 @@
-package com.test.model;
+package com.test.builder;
 
 import com.syos.model.BillItem;
 import com.syos.model.Product;

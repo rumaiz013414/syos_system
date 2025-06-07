@@ -8,8 +8,10 @@ import com.syos.factory.BillItemFactory;
 import com.syos.model.Bill;
 import com.syos.model.BillItem;
 import com.syos.model.Product;
+import com.syos.model.ShelfStock;
 import com.syos.repository.BillingRepository;
 import com.syos.repository.ProductRepository;
+import com.syos.repository.ShelfStockRepository;
 import com.syos.singleton.InventoryManager;
 import com.syos.strategy.DiscountPricingStrategy;
 import com.syos.strategy.ExpiryAwareFifoStrategy;
@@ -17,6 +19,7 @@ import com.syos.strategy.NoDiscountStrategy;
 
 public class StoreBillingService {
 	private final ProductRepository productReposiotry = new ProductRepository();
+	private ShelfStockRepository shelfStockRepository = new ShelfStockRepository(productReposiotry);
 	private final BillingRepository billRepository = new BillingRepository();
 	private final BillItemFactory billItemFactory = new BillItemFactory(
 			new DiscountPricingStrategy(new NoDiscountStrategy()));
@@ -40,6 +43,11 @@ public class StoreBillingService {
 				String productCode = inputScanner.nextLine().trim();
 				if ("done".equalsIgnoreCase(productCode)) {
 					break;
+				}
+				ShelfStock shelf = shelfStockRepository.findByCode(productCode);
+				if (shelf == null) {
+					System.out.println("Error: Product code not found in shelf. Please try again.");
+					continue;
 				}
 
 				Product product = productReposiotry.findByCode(productCode);

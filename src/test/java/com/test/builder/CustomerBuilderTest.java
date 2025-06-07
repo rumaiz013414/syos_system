@@ -1,4 +1,4 @@
-package com.test.model; // Adjust package to match your test structure
+package com.test.builder; // Adjust package to match your test structure
 
 import com.syos.model.Customer; // Import your Customer class
 import org.junit.jupiter.api.DisplayName;
