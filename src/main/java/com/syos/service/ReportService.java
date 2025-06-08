@@ -35,6 +35,11 @@ public class ReportService {
 		this.reportRepository = new ReportRepository(productRepository, shelfStockRepository, stockBatchRepository);
 	}
 
+	public ReportService(Scanner scanner, ReportRepository reportRepository) {
+		this.scanner = scanner;
+		this.reportRepository = reportRepository;
+	}
+
 	public void run() {
 		while (true) {
 			System.out.println("\n=== Report Menu ===");
@@ -50,8 +55,8 @@ public class ReportService {
 			case "1" -> generateDailySalesReport();
 			case "2" -> generateAllTransactionsReport();
 			case "3" -> generateProductStockReport();
-			case "4" -> generateShelfAndInventoryAnalysisReport(); 
-			case "5" -> { 
+			case "4" -> generateShelfAndInventoryAnalysisReport();
+			case "5" -> {
 				System.out.println("Exiting report menu.");
 				return;
 			}
@@ -60,7 +65,7 @@ public class ReportService {
 		}
 	}
 
-	private void generateDailySalesReport() {
+	public void generateDailySalesReport() {
 		System.out.println("\n--- Daily Sales Report ---");
 		LocalDate reportDate = null;
 		while (reportDate == null) {
@@ -99,7 +104,7 @@ public class ReportService {
 		displaySalesReport(reportDate, billReportDTOs, totalDailyRevenue);
 	}
 
-	private void generateAllTransactionsReport() {
+	public void generateAllTransactionsReport() {
 		System.out.println("\n--- All Transactions Report ---");
 		List<Bill> bills = reportRepository.getAllBills();
 
@@ -167,7 +172,7 @@ public class ReportService {
 		System.out.println(lineSeparatorHead);
 	}
 
-	private void generateProductStockReport() {
+	public void generateProductStockReport() {
 		System.out.println("\n--- Product Stock Report (Combined Shelf & Inventory) ---");
 		List<ProductStockReportItemDTO> reportItems = reportRepository.getProductStockReportData(0);
 
@@ -222,7 +227,8 @@ public class ReportService {
 		}
 
 		List<ProductStockReportItemDTO> itemsOnShelf = allStockItems.stream()
-				.filter(item -> item.getTotalQuantityOnShelf() > CommonVariables.MINIMUMQUANTITY).collect(Collectors.toList());
+				.filter(item -> item.getTotalQuantityOnShelf() > CommonVariables.MINIMUMQUANTITY)
+				.collect(Collectors.toList());
 
 		List<ProductStockReportItemDTO> reshelveCandidates = itemsOnShelf.stream()
 				.filter(item -> item.getTotalQuantityOnShelf() > CommonVariables.STOCK_ALERT_THRESHOLD)
@@ -262,8 +268,7 @@ public class ReportService {
 			System.out.println("No items on shelf currently exceed the reshelving candidate threshold of "
 					+ CommonVariables.STOCK_ALERT_THRESHOLD + ".");
 		} else {
-			System.out.println(
-					"The following items have a high quantity on the shelf");
+			System.out.println("The following items have a high quantity on the shelf");
 			System.out.println(lineSeparatorHead);
 			System.out.printf("%-15s %-30s %-15s %-22s%n", "Code", "Product Name", "Qty on Shelf",
 					"Earliest Shelf Exp.");
