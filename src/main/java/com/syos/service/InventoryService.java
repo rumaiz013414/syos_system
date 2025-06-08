@@ -27,6 +27,7 @@ import com.syos.repository.ProductRepository;
 import com.syos.singleton.InventoryManager;
 
 import com.syos.strategy.ExpiryAwareFifoStrategy;
+import com.syos.util.CommonVariables;
 
 public class InventoryService {
 	private final InventoryManager inventoryManager;
@@ -39,7 +40,7 @@ public class InventoryService {
 
 		this.inventoryManager = InventoryManager.getInstance(new ExpiryAwareFifoStrategy());
 
-		inventoryManager.addObserver(new StockAlertService(50));
+		inventoryManager.addObserver(new StockAlertService(CommonVariables.STOCK_ALERT_THRESHOLD));
 
 		ProductService productService = new ProductService();
 

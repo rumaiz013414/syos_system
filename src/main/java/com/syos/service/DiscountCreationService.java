@@ -50,9 +50,10 @@ public class DiscountCreationService {
 			String valueInput = scanner.nextLine().trim();
 			try {
 				discountValue = Double.parseDouble(valueInput);
-				if (discountValue < 0) {
+				if (discountValue < CommonVariables.MINIMUMAMOUNT) {
 					System.out.println("Error: Discount value must be non-negative.");
-				} else if (discountType == DiscountType.PERCENT && discountValue > 100) {
+				} else if (discountType == DiscountType.PERCENT
+						&& discountValue > CommonVariables.MAX_PRODUCT_NAME_LENGTH) {
 					System.out.println("Error: Percentage cannot exceed 100.");
 				} else {
 					break;
@@ -90,7 +91,6 @@ public class DiscountCreationService {
 			}
 		}
 
-//		int discountId = -1;
 		try {
 			CommonVariables.discountId = discountRepository.createDiscount(discountName, discountType, discountValue,
 					startDate, endDate);

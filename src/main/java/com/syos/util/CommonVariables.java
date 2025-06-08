@@ -12,7 +12,7 @@ public class CommonVariables {
 	public static int MIN_NAME_LENGTH = 2;
 	public static int MAX_NAME_LENGTH = 50;
 	public static double MIN_PRICE = 1.00;
-	public static  int discountId = -1;
+	public static int discountId = -1;
 	public static int STOCK_ALERT_THRESHOLD = 50;
 	public static double MIN_TOTAL_PRICE = 0.0;
 	public static double percentageDevisor = 100.0;
