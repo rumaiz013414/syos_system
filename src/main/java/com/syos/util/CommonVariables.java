@@ -18,4 +18,5 @@ public class CommonVariables {
 	public static double percentageDevisor = 100.0;
 	public static double oneHundredPercent = 1.0;
 	public static int discountExpiryWeeks = 1;
+	public static double totalRevenue = 0.0;
 }

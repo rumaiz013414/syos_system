@@ -222,7 +222,7 @@ public class ReportService {
 		}
 
 		List<ProductStockReportItemDTO> itemsOnShelf = allStockItems.stream()
-				.filter(item -> item.getTotalQuantityOnShelf() > 0).collect(Collectors.toList());
+				.filter(item -> item.getTotalQuantityOnShelf() > CommonVariables.MINIMUMQUANTITY).collect(Collectors.toList());
 
 		List<ProductStockReportItemDTO> reshelveCandidates = itemsOnShelf.stream()
 				.filter(item -> item.getTotalQuantityOnShelf() > CommonVariables.STOCK_ALERT_THRESHOLD)
