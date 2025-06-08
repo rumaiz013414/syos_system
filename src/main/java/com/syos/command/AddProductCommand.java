@@ -5,17 +5,12 @@ import java.util.Scanner;
 import com.syos.model.Product;
 import com.syos.repository.ProductRepository;
 import com.syos.service.ProductService;
+import com.syos.util.CommonVariables;
 
 public class AddProductCommand implements Command {
 	private final ProductService productService;
 	private final Scanner scanner;
 	private final ProductRepository productRepository;
-
-	private static final int MIN_CODE_LENGTH = 3;
-	private static final int MAX_CODE_LENGTH = 10;
-	private static final int MIN_NAME_LENGTH = 2;
-	private static final int MAX_NAME_LENGTH = 50;
-	private static final double MIN_PRICE = 1.00;
 
 	public AddProductCommand(ProductService productService, Scanner scanner, ProductRepository productRepository) {
 		this.productService = productService;
@@ -33,9 +28,9 @@ public class AddProductCommand implements Command {
 			code = scanner.nextLine().trim();
 			if (code.isEmpty()) {
 				System.out.println("Error: Product code cannot be empty.");
-			} else if (code.length() < MIN_CODE_LENGTH || code.length() > MAX_CODE_LENGTH) {
-				System.out.printf("Error: Product code must be between %d and %d characters long.%n", MIN_CODE_LENGTH,
-						MAX_CODE_LENGTH);
+			} else if (code.length() < CommonVariables.MIN_CODE_LENGTH || code.length() > CommonVariables.MAX_CODE_LENGTH) {
+				System.out.printf("Error: Product code must be between %d and %d characters long.%n", CommonVariables.MIN_CODE_LENGTH,
+						CommonVariables.MAX_CODE_LENGTH);
 			} else if (!code.matches("^[a-zA-Z0-9]+$")) {
 				System.out.println("Error: Product code can only contain letters and numbers.");
 			}
@@ -53,9 +48,9 @@ public class AddProductCommand implements Command {
 			name = scanner.nextLine().trim();
 			if (name.isEmpty()) {
 				System.out.println("Error: Product name cannot be empty.");
-			} else if (name.length() < MIN_NAME_LENGTH || name.length() > MAX_NAME_LENGTH) {
-				System.out.printf("Error: Product name must be between %d and %d characters long.%n", MIN_NAME_LENGTH,
-						MAX_NAME_LENGTH);
+			} else if (name.length() < CommonVariables.MIN_NAME_LENGTH || name.length() > CommonVariables.MAX_NAME_LENGTH) {
+				System.out.printf("Error: Product name must be between %d and %d characters long.%n", CommonVariables.MIN_NAME_LENGTH,
+						CommonVariables.MAX_NAME_LENGTH);
 			} else {
 				break;
 			}
@@ -73,8 +68,8 @@ public class AddProductCommand implements Command {
 
 			try {
 				price = Double.parseDouble(priceInput);
-				if (price < MIN_PRICE) {
-					System.out.printf("Error: Price cannot be negative. Minimum price is %.2f.%n", MIN_PRICE);
+				if (price < CommonVariables.MIN_PRICE) {
+					System.out.printf("Error: Price cannot be negative. Minimum price is %.2f.%n", CommonVariables.MIN_PRICE);
 				} else {
 					break;
 				}

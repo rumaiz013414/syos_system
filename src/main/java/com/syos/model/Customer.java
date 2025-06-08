@@ -7,10 +7,10 @@ public class Customer extends User {
 	private final String lastName;
 	private final UserType role;
 
-	private Customer(CustomerBuilder b) {
-		super(b.email, b.password);
-		this.firstName = b.firstName;
-		this.lastName = b.lastName;
+	private Customer(CustomerBuilder customerBuilder) {
+		super(customerBuilder.email, customerBuilder.password);
+		this.firstName = customerBuilder.firstName;
+		this.lastName = customerBuilder.lastName;
 		this.role = UserType.CUSTOMER;
 	}
 
@@ -51,23 +51,23 @@ public class Customer extends User {
 		private String email;
 		private String password;
 
-		public CustomerBuilder firstName(String fn) {
-			this.firstName = fn;
+		public CustomerBuilder firstName(String firstName) {
+			this.firstName = firstName;
 			return this;
 		}
 
-		public CustomerBuilder lastName(String ln) {
-			this.lastName = ln;
+		public CustomerBuilder lastName(String lastName) {
+			this.lastName = lastName;
 			return this;
 		}
 
-		public CustomerBuilder email(String e) {
-			this.email = e;
+		public CustomerBuilder email(String email) {
+			this.email = email;
 			return this;
 		}
 
-		public CustomerBuilder password(String pw) {
-			this.password = pw;
+		public CustomerBuilder password(String password) {
+			this.password = password;
 			return this;
 		}
 

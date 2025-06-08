@@ -15,15 +15,15 @@ public class CustomerRepository {
 				INSERT INTO users(email,password,first_name,last_name,user_type)
 				VALUES (?,?,?,?,?)
 				""";
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-			ps.setString(1, customer.getEmail());
-			ps.setString(2, customer.getPassword());
-			ps.setString(3, customer.getFirstName());
-			ps.setString(4, customer.getLastName());
-			ps.setString(5, customer.getRole().name());
-			ps.executeUpdate();
+			preparedStatement.setString(1, customer.getEmail());
+			preparedStatement.setString(2, customer.getPassword());
+			preparedStatement.setString(3, customer.getFirstName());
+			preparedStatement.setString(4, customer.getLastName());
+			preparedStatement.setString(5, customer.getRole().name());
+			preparedStatement.executeUpdate();
 		} catch (SQLException e) {
 			throw new RuntimeException("Error saving customer", e);
 		}
@@ -35,17 +35,17 @@ public class CustomerRepository {
 				  FROM users
 				 WHERE email = ?
 				""";
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-			ps.setString(1, email.toLowerCase());
-			ResultSet rs = ps.executeQuery();
-			if (rs.next()) {
-				String fetchedEmail = rs.getString("email");
-				String hashedPassword = rs.getString("password");
-				String firstName = rs.getString("first_name");
-				String lastName = rs.getString("last_name");
-				String userTypeString = rs.getString("user_type");
+			preparedStatement.setString(1, email.toLowerCase());
+			ResultSet resultSet = preparedStatement.executeQuery();
+			if (resultSet.next()) {
+				String fetchedEmail = resultSet.getString("email");
+				String hashedPassword = resultSet.getString("password");
+				String firstName = resultSet.getString("first_name");
+				String lastName = resultSet.getString("last_name");
+				String userTypeString = resultSet.getString("user_type");
 
 				UserType userType = UserType.valueOf(userTypeString.toUpperCase());
 
@@ -59,13 +59,18 @@ public class CustomerRepository {
 
 	public boolean existsByEmail(String email) {
 		String sql = "SELECT 1 FROM users WHERE email = ?";
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setString(1, email.toLowerCase());
-			ResultSet rs = ps.executeQuery();
-			return rs.next();
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+			preparedStatement.setString(1, email.toLowerCase());
+			ResultSet resultSet = preparedStatement.executeQuery();
+			return resultSet.next();
 		} catch (SQLException e) {
 			throw new RuntimeException("Error checking customer existence", e);
 		}
+	}
+
+	public void clear() {
+		// TODO Auto-generated method stub
+
 	}
 }

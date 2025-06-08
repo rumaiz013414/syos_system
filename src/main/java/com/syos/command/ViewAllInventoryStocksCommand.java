@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class ViewAllInventoryStocksCommand implements Command {
 	private final InventoryManager inventoryManager;
-    private final String NL = System.lineSeparator(); // Declare NL for consistent use
+	private final String newLine = System.lineSeparator();
 
 	public ViewAllInventoryStocksCommand(InventoryManager inventoryManager, Scanner scanner) {
 		this.inventoryManager = inventoryManager;
@@ -16,8 +16,7 @@ public class ViewAllInventoryStocksCommand implements Command {
 
 	@Override
 	public void execute() {
-        // Use NL for the initial newline for consistency
-		System.out.println(NL + "--- All Inventory Stock Batches ---");
+		System.out.println(newLine + "--- All Inventory Stock Batches ---");
 		List<String> allProductCodes = inventoryManager.getAllProductCodes();
 
 		if (allProductCodes.isEmpty()) {
@@ -29,8 +28,7 @@ public class ViewAllInventoryStocksCommand implements Command {
 			List<StockBatch> batches = inventoryManager.getBatchesForProduct(productCode);
 
 			if (!batches.isEmpty()) {
-                // Use NL for the newline before Product Code
-				System.out.println(NL + "Product Code: " + productCode);
+				System.out.println(newLine + "Product Code: " + productCode);
 				System.out.printf("%-5s %-15s %-15s %-10s %-10s%n", "ID", "Purchase Date", "Expiry Date", "Quantity",
 						"Remaining");
 				System.out.println("----- --------------- --------------- ---------- ----------");

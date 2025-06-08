@@ -15,7 +15,7 @@ public class SyosSystem {
 		ShelfStrategy strategy = new ExpiryAwareFifoStrategy();
 		InventoryManager.getInstance(strategy);
 
-		Scanner sc = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in);
 		StoreBillingService billingService = new StoreBillingService();
 		InventoryService inventoryService = new InventoryService();
 		OnlineStoreService onlineStoreService = new OnlineStoreService();
@@ -29,7 +29,7 @@ public class SyosSystem {
 			System.out.println(" 4) Reports");
 
 			System.out.print("\n Select an option : ");
-			String choice = sc.nextLine().trim();
+			String choice = scanner.nextLine().trim();
 
 			switch (choice) {
 			case "1" -> billingService.run();
@@ -38,7 +38,7 @@ public class SyosSystem {
 			case "4" -> reportService.run();
 			case "5" -> {
 				System.out.println("Goodbye!");
-				sc.close();
+				scanner.close();
 				return;
 			}
 			default -> System.out.println("Invalid selection.");

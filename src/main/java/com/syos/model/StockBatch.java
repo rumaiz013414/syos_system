@@ -37,7 +37,7 @@ public class StockBatch {
 		return quantityRemaining;
 	}
 
-	public void setQuantityRemaining(int q) {
-		this.quantityRemaining = q;
+	public void setQuantityRemaining(int quantityRemaining) {
+		this.quantityRemaining = quantityRemaining;
 	}
 }

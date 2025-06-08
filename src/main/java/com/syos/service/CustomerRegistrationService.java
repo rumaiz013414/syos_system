@@ -14,17 +14,25 @@ public class CustomerRegistrationService {
 	}
 
 	public Customer register(CustomerRegisterRequestDTO request) throws Exception {
+		// Basic validation for DTO fields (already in your code)
+		if (request.getFirstName() == null || request.getFirstName().isEmpty()) {
+			throw new IllegalArgumentException("First name cannot be empty.");
+		}
+		if (request.getLastName() == null || request.getLastName().isEmpty()) {
+			throw new IllegalArgumentException("Last name cannot be empty.");
+		}
 		if (request.getEmail() == null || request.getEmail().isEmpty()) {
 			throw new IllegalArgumentException("Email cannot be empty.");
 		}
 		if (request.getPassword() == null || request.getPassword().isEmpty()) {
 			throw new IllegalArgumentException("Password cannot be empty.");
 		}
+
 		if (customerRepository.existsByEmail(request.getEmail())) {
 			throw new Exception("Email '" + request.getEmail() + "' is already registered.");
 		}
 		String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
-		Customer newCustomer = new Customer(request.getFirstName(), request.getFirstName(),
+		Customer newCustomer = new Customer(request.getFirstName(), request.getLastName(),
 				request.getEmail().toLowerCase(), hashedPassword, request.getUserType());
 
 		customerRepository.save(newCustomer);

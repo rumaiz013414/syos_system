@@ -3,6 +3,7 @@ package com.syos.command;
 import com.syos.repository.DiscountRepository;
 import com.syos.repository.ProductRepository;
 import com.syos.model.Product;
+import com.syos.enums.DiscountType;
 import com.syos.model.Discount;
 
 import java.util.List;
@@ -45,7 +46,7 @@ public class UnassignDiscountCommand implements Command {
 		System.out.printf("%-5s %-20s %-10s %-10s%n", "ID", "Name", "Type", "Value");
 		System.out.println("--------------------------------------------------");
 		for (Discount discount : currentDiscounts) {
-			String typeDisplay = (discount.getType() == com.syos.enums.DiscountType.PERCENT) ? "PERCENT" : "AMOUNT";
+			String typeDisplay = (discount.getType() == DiscountType.PERCENT) ? "PERCENT" : "AMOUNT";
 			String valueDisplay = String.format("%.2f", discount.getValue());
 			System.out.printf("%-5d %-20s %-10s %-10s%n", discount.getId(), discount.getName(), typeDisplay,
 					valueDisplay);
@@ -67,7 +68,7 @@ public class UnassignDiscountCommand implements Command {
 			return;
 		}
 
-		boolean isAssigned = currentDiscounts.stream().anyMatch(d -> d.getId() == discountId);
+		boolean isAssigned = currentDiscounts.stream().anyMatch(discount -> discount.getId() == discountId);
 		if (!isAssigned) {
 			System.out.println("Error: Discount ID " + discountId + " is not currently assigned to product '"
 					+ productCode + "'.");

@@ -2,6 +2,8 @@ package com.syos.command;
 
 import com.syos.model.StockBatch;
 import com.syos.singleton.InventoryManager;
+import com.syos.util.CommonVariables;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -21,7 +23,7 @@ public class RemoveCloseToExpiryStockCommand implements Command {
         int daysThreshold;
         try {
             daysThreshold = Integer.parseInt(scanner.nextLine().trim());
-            if (daysThreshold < 0) {
+            if (daysThreshold < CommonVariables.MININUMDAYS) {
                 System.out.println("Expiry threshold must be a non-negative number.");
                 return;
             }
@@ -39,8 +41,8 @@ public class RemoveCloseToExpiryStockCommand implements Command {
 
         System.out.printf("%nProducts identified with batches expiring in next %d days:%n", daysThreshold);
         for (String productCode : productsWithExpiringBatches) {
-            int shelfQty = inventoryManager.getQuantityOnShelf(productCode);
-            System.out.printf("  - %s (Current Shelf Qty: %d)%n", productCode, shelfQty);
+            int shelfQuantity = inventoryManager.getQuantityOnShelf(productCode);
+            System.out.printf("  - %s (Current Shelf Qty: %d)%n", productCode, shelfQuantity);
             List<StockBatch> expiringBatches = inventoryManager.getExpiringBatchesForProduct(productCode, daysThreshold);
             for (StockBatch batch : expiringBatches) {
                 System.out.printf("    Batch ID: %d, Exp. Date: %s, Remaining Qty (Back-Store): %d%n",
@@ -57,7 +59,7 @@ public class RemoveCloseToExpiryStockCommand implements Command {
         }
 
         int currentShelfQuantity = inventoryManager.getQuantityOnShelf(productCodeToRemove);
-        if (currentShelfQuantity == 0) {
+        if (currentShelfQuantity == CommonVariables.MINIMUMQUANTITY) {
             System.out.printf("Product %s is not currently on the shelf. No stock removed.%n", productCodeToRemove);
             return;
         }
@@ -67,7 +69,7 @@ public class RemoveCloseToExpiryStockCommand implements Command {
         int quantityToRemove;
         try {
             quantityToRemove = Integer.parseInt(scanner.nextLine().trim());
-            if (quantityToRemove <= 0 || quantityToRemove > currentShelfQuantity) {
+            if (quantityToRemove <= CommonVariables.MINIMUMQUANTITY || quantityToRemove > currentShelfQuantity) {
                 System.out.printf("Invalid quantity. Must be positive and not exceed current shelf quantity (%d).%n", currentShelfQuantity);
                 return;
             }

@@ -6,12 +6,13 @@ import com.syos.model.Customer;
 import com.syos.model.User;
 
 public class UserFactory {
-	public static User createUser(CustomerRegisterRequestDTO req) {
-		UserType type = req.getUserType();
+	public static User createUser(CustomerRegisterRequestDTO customerRegisterRequestDTO) {
+		UserType type = customerRegisterRequestDTO.getUserType();
 		switch (type) {
 		case CUSTOMER:
-			return new Customer.CustomerBuilder().firstName(req.getFirstName()).lastName(req.getLastName())
-					.email(req.getEmail()).password(req.getPassword()).build();
+			return new Customer.CustomerBuilder().firstName(customerRegisterRequestDTO.getFirstName())
+					.lastName(customerRegisterRequestDTO.getLastName()).email(customerRegisterRequestDTO.getEmail())
+					.password(customerRegisterRequestDTO.getPassword()).build();
 		default:
 			throw new IllegalArgumentException("Unsupported user type: " + type);
 		}

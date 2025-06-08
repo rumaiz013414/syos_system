@@ -5,6 +5,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 import com.syos.singleton.InventoryManager;
+import com.syos.util.CommonVariables;
 
 public class ReceiveStockCommand implements Command {
 	private final InventoryManager inventoryManager;
@@ -19,24 +20,24 @@ public class ReceiveStockCommand implements Command {
 	public void execute() {
 		System.out.println("\n=== Receive New Stock ===");
 
-		String code;
+		String productCode;
 		while (true) {
 			System.out.print("Product code: ");
-			code = scanner.nextLine().trim();
-			if (code.isEmpty()) {
+			productCode = scanner.nextLine().trim();
+			if (productCode.isEmpty()) {
 				System.out.println("Error: Product code cannot be empty.");
 			} else {
 				break;
 			}
 		}
 
-		int qty;
+		int quantity;
 		while (true) {
 			System.out.print("Quantity: ");
-			String qtyInput = scanner.nextLine().trim();
+			String quantityInput = scanner.nextLine().trim();
 			try {
-				qty = Integer.parseInt(qtyInput);
-				if (qty <= 0) {
+				quantity = Integer.parseInt(quantityInput);
+				if (quantity <= CommonVariables.MINIMUMQUANTITY) {
 					System.out.println("Error: Quantity must be positive.");
 				} else {
 					break;
@@ -46,26 +47,26 @@ public class ReceiveStockCommand implements Command {
 			}
 		}
 
-		LocalDate pd;
+		LocalDate purchaseDate;
 		while (true) {
 			System.out.print("Purchase date (YYYY-MM-DD): ");
-			String pdInput = scanner.nextLine().trim();
+			String purchaseDateInput = scanner.nextLine().trim();
 			try {
-				pd = LocalDate.parse(pdInput);
+				purchaseDate = LocalDate.parse(purchaseDateInput);
 				break;
 			} catch (DateTimeParseException e) {
 				System.out.println("Error: Invalid purchase date format. Please use YYYY-MM-DD.");
 			}
 		}
 
-		LocalDate ed;
+		LocalDate expiryDate;
 		while (true) {
 			System.out.print("Expiry date (YYYY-MM-DD): ");
-			String edInput = scanner.nextLine().trim();
+			String expiryDateInput = scanner.nextLine().trim();
 			try {
-				ed = LocalDate.parse(edInput);
+				expiryDate = LocalDate.parse(expiryDateInput);
 
-				if (ed.isBefore(pd)) {
+				if (expiryDate.isBefore(purchaseDate)) {
 					System.out.println("Error: Expiry date cannot be before purchase date.");
 				} else {
 					break;
@@ -76,7 +77,7 @@ public class ReceiveStockCommand implements Command {
 		}
 
 		try {
-			inventoryManager.receiveStock(code, pd, ed, qty);
+			inventoryManager.receiveStock(productCode, purchaseDate, expiryDate, quantity);
 		} catch (IllegalArgumentException e) {
 			System.out.println("Failed to receive stock: " + e.getMessage());
 		} catch (RuntimeException e) {

@@ -62,4 +62,9 @@ public class ProductRepository {
 			throw new RuntimeException("Error adding new product", e);
 		}
 	}
+
+	public void clear() {
+		// TODO Auto-generated method stub
+		
+	}
 }

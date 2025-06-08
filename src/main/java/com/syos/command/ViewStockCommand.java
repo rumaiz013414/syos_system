@@ -1,6 +1,8 @@
 package com.syos.command;
 
 import com.syos.singleton.InventoryManager;
+import com.syos.util.CommonVariables;
+
 import java.util.Scanner;
 import java.util.List;
 import com.syos.model.StockBatch;
@@ -13,6 +15,8 @@ public class ViewStockCommand implements Command {
 		this.inventoryManager = inventoryManager;
 		this.scanner = scanner;
 	}
+
+	String TABLE_SEPARATOR = "-----------------------------------------------------------------------------------------------------------------";
 
 	@Override
 	public void execute() {
@@ -50,12 +54,10 @@ public class ViewStockCommand implements Command {
 	}
 
 	private void printStockTable(List<String> productCodes) {
-		System.out.println(
-				"-----------------------------------------------------------------------------------------------------------------");
+		System.out.println(TABLE_SEPARATOR);
 		System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15s%n", "Product Code", "Shelf Qty", "Batch ID",
 				"Purch. Date", "Exp. Date", "Batch Rem. Qty");
-		System.out.println(
-				"-----------------------------------------------------------------------------------------------------------------");
+		System.out.println(TABLE_SEPARATOR);
 
 		boolean anyProductFoundWithStock = false;
 
@@ -64,8 +66,8 @@ public class ViewStockCommand implements Command {
 				int quantityOnShelf = inventoryManager.getQuantityOnShelf(productCode);
 				List<StockBatch> batches = inventoryManager.getBatchesForProduct(productCode);
 
-				if (batches.isEmpty() && quantityOnShelf == 0) {
-					if (productCodes.size() == 1) {
+				if (batches.isEmpty() && quantityOnShelf == CommonVariables.MINIMUMQUANTITY) {
+					if (productCodes.size() == CommonVariables.PRODUCTQUANTITY) {
 						System.out.printf("%-15s %-15d %-15s %-15s %-15s %-15s%n", productCode, 0, "N/A", "N/A", "N/A",
 								"N/A");
 						anyProductFoundWithStock = true;
@@ -103,8 +105,7 @@ public class ViewStockCommand implements Command {
 		if (!anyProductFoundWithStock && !productCodes.isEmpty()) {
 			System.out.println("No stock data found for the selected products.");
 		}
-		System.out.println(
-				"-----------------------------------------------------------------------------------------------------------------");
+		System.out.println(TABLE_SEPARATOR);
 		System.out.println(
 				"Note: 'Shelf Qty' is the total quantity on the shelf. 'Batch Rem. Qty' is stock remaining in back-store batches.");
 	}

@@ -1,6 +1,7 @@
 package com.syos.model;
 
 import com.syos.strategy.PricingStrategy;
+import com.syos.util.CommonVariables;
 
 public class BillItem {
     private final int id;
@@ -10,13 +11,13 @@ public class BillItem {
     private final double totalPrice;
     private final double discountAmount;
 
-    private BillItem(BillItemBuilder b) {
+    private BillItem(BillItemBuilder billItemBuilder) {
         this.id             = 0;
         this.billId         = 0;
-        this.product        = b.product;
-        this.quantity       = b.quantity;
-        this.totalPrice     = b.totalPrice;
-        this.discountAmount = b.discountAmount;
+        this.product        = billItemBuilder.product;
+        this.quantity       = billItemBuilder.quantity;
+        this.totalPrice     = billItemBuilder.totalPrice;
+        this.discountAmount = billItemBuilder.discountAmount;
     }
 
     public BillItem(int id, int billId, Product product, int quantity, double totalPrice, double discountAmount) {
@@ -45,8 +46,8 @@ public class BillItem {
             if (product == null) {
                 throw new IllegalArgumentException("Product cannot be null");
             }
-            if (quantity <= 0) {
-                throw new IllegalArgumentException("Quantity must be > 0");
+            if (quantity <= CommonVariables.MINIMUMQUANTITY) {
+                throw new IllegalArgumentException("Quantity must be greater than 0");
             }
             this.product = product;
             this.quantity = quantity;

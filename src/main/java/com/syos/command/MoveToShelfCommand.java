@@ -3,6 +3,7 @@ package com.syos.command;
 import java.util.Scanner;
 
 import com.syos.singleton.InventoryManager;
+import com.syos.util.CommonVariables;
 
 public class MoveToShelfCommand implements Command {
 	private final InventoryManager inventoryManager;
@@ -15,9 +16,9 @@ public class MoveToShelfCommand implements Command {
 
 	@Override
 	public void execute() {
-		System.out.println("\n=== Move Stock to Shelf ==="); // Added header
+		System.out.println("\n=== Move Stock to Shelf ===");
 
-		// --- Product Code Input and Validation ---
+		// product code input and validation
 		String code;
 		while (true) {
 			System.out.print("Product code: ");
@@ -29,14 +30,14 @@ public class MoveToShelfCommand implements Command {
 			}
 		}
 
-		// --- Quantity Input and Validation ---
-		int qty;
+		// quantity input and validation
+		int quantity;
 		while (true) {
 			System.out.print("Quantity: ");
 			String qtyInput = scanner.nextLine().trim();
 			try {
-				qty = Integer.parseInt(qtyInput);
-				if (qty <= 0) {
+				quantity = Integer.parseInt(qtyInput);
+				if (quantity <= CommonVariables.MINIMUMQUANTITY) {
 					System.out.println("Error: Quantity must be positive.");
 				} else {
 					break;
@@ -46,19 +47,15 @@ public class MoveToShelfCommand implements Command {
 			}
 		}
 
-		// --- Execute Move and Handle Exceptions ---
 		try {
-			inventoryManager.moveToShelf(code, qty);
-			// Success message is now printed by InventoryManager itself for consistency
-			// System.out.printf("Moved %d units of %s to shelf.%n", qty, code); // Removed,
-			// as InventoryManager prints it
+			inventoryManager.moveToShelf(code, quantity);
 		} catch (IllegalArgumentException e) {
 			System.out.println("Failed to move to shelf: " + e.getMessage());
 		} catch (IllegalStateException e) {
 			System.out.println("Operation failed: " + e.getMessage());
 		} catch (RuntimeException e) {
 			System.out.println("An unexpected error occurred: " + e.getMessage());
-			// e.printStackTrace(); // Keep for debugging, remove for production
+//			e.printStackTrace();
 		}
 	}
 }

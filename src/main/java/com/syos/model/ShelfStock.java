@@ -1,12 +1,12 @@
 package com.syos.model;
 
-import java.time.LocalDate; // Use LocalDate
+import java.time.LocalDate;
 
 public class ShelfStock {
 
 	private Product product;
 	private int batchId;
-	private int quantity; // This will be quantity_on_shelf for this specific batch
+	private int quantity;
 	private LocalDate expiryDate;
 
 	public ShelfStock(Product product, int quantity, int batchId, LocalDate expiryDate) {

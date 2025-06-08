@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.syos.util.CommonVariables;
+
 public class Bill {
 	private int id;
 	private final int serialNumber;
@@ -33,7 +35,7 @@ public class Bill {
 		this.cashTendered = cashTendered;
 		this.changeReturned = changeReturned;
 		this.transactionType = transactionType;
-		this.items = new ArrayList<>(); 
+		this.items = new ArrayList<>();
 	}
 
 	public int getId() {
@@ -89,7 +91,7 @@ public class Bill {
 			}
 			this.serialNumber = serialNumber;
 			this.items = items;
-			this.items.forEach(i -> totalAmount += i.getTotalPrice());
+			this.items.forEach(item -> totalAmount += item.getTotalPrice());
 		}
 
 		public BillBuilder withCashTendered(double cash) {
@@ -109,7 +111,7 @@ public class Bill {
 		}
 
 		public Bill build() {
-			if (cashTendered == 0) {
+			if (cashTendered == CommonVariables.MINIMUMAMOUNT) {
 				throw new IllegalStateException("Must set cashTendered");
 			}
 			return new Bill(this);

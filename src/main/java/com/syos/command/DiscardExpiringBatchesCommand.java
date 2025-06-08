@@ -2,6 +2,8 @@ package com.syos.command;
 
 import com.syos.model.StockBatch;
 import com.syos.singleton.InventoryManager;
+import com.syos.util.CommonVariables;
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -22,7 +24,7 @@ public class DiscardExpiringBatchesCommand implements Command {
 		int daysThreshold;
 		try {
 			daysThreshold = Integer.parseInt(scanner.nextLine().trim());
-			if (daysThreshold < 0) {
+			if (daysThreshold < CommonVariables.MININUMDAYS) {
 				System.out.println("Expiry threshold must be a non-negative number.");
 				return;
 			}
@@ -66,7 +68,7 @@ public class DiscardExpiringBatchesCommand implements Command {
 			return;
 		}
 
-		// Find the batch in the list to get its current quantity
+		// find the batch in the list to get its current quantity
 		StockBatch selectedBatch = null;
 		for (StockBatch batch : expiringBatches) {
 			if (batch.getId() == batchId) {
@@ -87,12 +89,12 @@ public class DiscardExpiringBatchesCommand implements Command {
 		int quantityToDiscard;
 		try {
 			quantityToDiscard = Integer.parseInt(scanner.nextLine().trim());
-			if (quantityToDiscard < 0) {
+			if (quantityToDiscard < CommonVariables.MINIMUMQUANTITY) {
 				System.out.println("Quantity to discard must be non-negative.");
 				return;
 			}
-			if (quantityToDiscard == 0) {
-				quantityToDiscard = selectedBatch.getQuantityRemaining(); // Discard all
+			if (quantityToDiscard == CommonVariables.MINIMUMQUANTITY) {
+				quantityToDiscard = selectedBatch.getQuantityRemaining();
 			}
 			if (quantityToDiscard > selectedBatch.getQuantityRemaining()) {
 				System.out.printf("Cannot discard %d units. Only %d remaining in batch %d.%n", quantityToDiscard,
