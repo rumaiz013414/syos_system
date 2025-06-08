@@ -1,9 +1,12 @@
 package com.syos.repository;
 
 import com.syos.db.DatabaseManager;
+import com.syos.dto.ProductStockReportItemDTO;
 import com.syos.model.Bill;
 import com.syos.model.BillItem;
 import com.syos.model.Product;
+import com.syos.model.ShelfStock;
+import com.syos.model.StockBatch;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -13,10 +16,13 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReportRepository {
 
 	private final ProductRepository productRepository = new ProductRepository();
+	private final ShelfStockRepository shelfStockRepository = new ShelfStockRepository(productRepository);
+	private final StockBatchRepository stockBatchRepository = new StockBatchRepository();
 
 	public double getTotalRevenue(LocalDate date) {
 		String sql = """
@@ -122,6 +128,48 @@ public class ReportRepository {
 			throw new RuntimeException("Error fetching all bills.", e);
 		}
 		return bills;
+	}
+
+	public List<ProductStockReportItemDTO> getProductStockReportData(int expiringDaysThreshold) {
+		List<ProductStockReportItemDTO> reportItems = new ArrayList<>();
+
+		List<String> allProductCodes = new ArrayList<>();
+		allProductCodes.addAll(shelfStockRepository.getAllProductCodes());
+		allProductCodes.addAll(stockBatchRepository.getAllProductCodesWithBatches());
+		List<String> distinctProductCodes = allProductCodes.stream().distinct().collect(Collectors.toList());
+
+		for (String productCode : distinctProductCodes) {
+			Product product = productRepository.findByCode(productCode);
+			if (product == null) {
+				System.err.println(
+						"Warning: Product " + productCode + " found in stock but not in product catalog. Skipping.");
+				continue;
+			}
+
+			int totalQuantityOnShelf = shelfStockRepository.getQuantity(productCode);
+			List<ShelfStock> shelfBatches = shelfStockRepository.getBatchesOnShelf(productCode);
+			LocalDate earliestExpiryDateOnShelf = null;
+			if (!shelfBatches.isEmpty()) {
+				earliestExpiryDateOnShelf = shelfBatches.stream().map(ShelfStock::getExpiryDate)
+						.min(LocalDate::compareTo).orElse(null);
+			}
+			List<StockBatch> inventoryBatches = stockBatchRepository.findByProduct(productCode);
+			int totalQuantityInInventory = inventoryBatches.stream().mapToInt(StockBatch::getQuantityRemaining).sum();
+			LocalDate earliestExpiryDateInInventory = null;
+			if (!inventoryBatches.isEmpty()) {
+				earliestExpiryDateInInventory = inventoryBatches.stream().map(StockBatch::getExpiryDate)
+						.min(LocalDate::compareTo).orElse(null);
+			}
+			List<StockBatch> expiringBatches = stockBatchRepository.findExpiringBatches(productCode,
+					expiringDaysThreshold);
+			int numberOfExpiringBatches = expiringBatches.size();
+
+			reportItems.add(new ProductStockReportItemDTO(productCode, product.getName(), product.getPrice(),
+
+					totalQuantityOnShelf, totalQuantityInInventory, earliestExpiryDateOnShelf,
+					earliestExpiryDateInInventory, numberOfExpiringBatches));
+		}
+		return reportItems;
 	}
 
 }

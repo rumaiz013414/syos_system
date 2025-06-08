@@ -1,7 +1,8 @@
 package com.syos.service;
 
-import com.syos.dto.BillReportDTO;
 import com.syos.dto.BillItemReportDTO;
+import com.syos.dto.BillReportDTO;
+import com.syos.dto.ProductStockReportItemDTO;
 import com.syos.dto.ReportDTOMapper;
 import com.syos.model.Bill;
 import com.syos.model.BillItem;
@@ -20,24 +21,28 @@ public class ReportService {
 	private final ReportRepository reportRepository = new ReportRepository();
 
 	String lineSeperatorHead = "===================================================================================";
+	String lineSeperatorHead2 = "=====================================================================================================================================";
+	String lineSeperator = "---------------------------------------------------------------";
 
 	public void run() {
 		while (true) {
 			System.out.println("\n=== Report Menu ===");
 			System.out.println("1) Daily Sales Report (Detailed)");
 			System.out.println("2) All Transactions Report");
-			System.out.println("3) Exit");
+			System.out.println("3) Product Stock Report");
+			System.out.println("4) Exit");
 			System.out.print("Choose an option: ");
 			String choice = scanner.nextLine();
 
 			switch (choice) {
-				case "1" -> generateDailySalesReport();
-				case "2" -> generateAllTransactionsReport();
-				case "3" -> {
-					System.out.println("Exiting report menu.");
-					return;
-				}
-				default -> System.out.println("Invalid option.");
+			case "1" -> generateDailySalesReport();
+			case "2" -> generateAllTransactionsReport();
+			case "3" -> generateProductStockReport();
+			case "4" -> {
+				System.out.println("Exiting report menu.");
+				return;
+			}
+			default -> System.out.println("Invalid option.");
 			}
 		}
 	}
@@ -106,7 +111,7 @@ public class ReportService {
 	}
 
 	private void displaySalesReport(LocalDate reportDate, List<BillReportDTO> billReportDTOs,
-									double totalDailyRevenue) {
+			double totalDailyRevenue) {
 		if (reportDate != null) {
 			System.out.println("\nSales Report for: " + reportDate.format(DateTimeFormatter.ISO_DATE));
 		} else {
@@ -126,7 +131,8 @@ public class ReportService {
 			if (itemDTOs != null && !itemDTOs.isEmpty()) {
 				System.out.printf("  %-25s %-10s %-10s %-12s %-10s%n", "Item", "Qty", "Unit Price", "Subtotal",
 						"Discount");
-				System.out.println("  ---------------------------------------------------------------------------------");
+				System.out
+						.println("  ---------------------------------------------------------------------------------");
 				for (BillItemReportDTO itemDTO : itemDTOs) {
 					System.out.printf("  %-25s %-10d %-10.2f %-12.2f %-10.2f%n", itemDTO.getProductName(),
 							itemDTO.getQuantity(), itemDTO.getUnitPrice(), itemDTO.getCalculatedSubtotal(),
@@ -147,5 +153,49 @@ public class ReportService {
 			System.out.printf("Total revenue for all transactions: %.2f%n", totalDailyRevenue);
 		}
 		System.out.println(lineSeperatorHead);
+	}
+
+	private void generateProductStockReport() {
+		System.out.println("\n--- Product Stock Report ---");
+		List<ProductStockReportItemDTO> reportItems = reportRepository.getProductStockReportData(0);
+
+		if (reportItems.isEmpty()) {
+			System.out.println("No product stock data found.");
+			return;
+		}
+
+		displayProductStockReport(reportItems);
+	}
+
+	private void displayProductStockReport(List<ProductStockReportItemDTO> reportItems) {
+		System.out.println("\nProduct Stock Report");
+		System.out.println(lineSeperatorHead2);
+		System.out.printf("%-15s %-30s %-10s %-10s %-22s %-22s %-10s%n", "Code", "Product Name", "Shelf Qty",
+				"Inventory. Qty", "Earliest Shelf Exp.", "Earliest Inventory. Exp.", "Exp. Batches");
+		System.out.println(lineSeperatorHead2);
+
+		for (ProductStockReportItemDTO item : reportItems) {
+			String earliestShelfExpiry = (item.getEarliestExpiryDateOnShelf() != null)
+					? item.getEarliestExpiryDateOnShelf().format(DateTimeFormatter.ISO_DATE)
+					: "N/A";
+			String earliestInvExpiry = (item.getEarliestExpiryDateInInventory() != null)
+					? item.getEarliestExpiryDateInInventory().format(DateTimeFormatter.ISO_DATE)
+					: "N/A";
+
+			System.out.printf("%-15s %-30s %-10d %-10d %-22s %-22s %-10d%n", item.getProductCode(),
+					item.getProductName(), item.getTotalQuantityOnShelf(), item.getTotalQuantityInInventory(),
+					earliestShelfExpiry, earliestInvExpiry, item.getNumberOfExpiringBatches());
+		}
+		System.out.println(lineSeperatorHead2);
+
+		int totalProducts = reportItems.size();
+		int totalShelfQuantity = reportItems.stream().mapToInt(ProductStockReportItemDTO::getTotalQuantityOnShelf)
+				.sum();
+		int totalInventoryQuantity = reportItems.stream()
+				.mapToInt(ProductStockReportItemDTO::getTotalQuantityInInventory).sum();
+
+		System.out.printf("Summary: %d Products | Total Shelf Quantity: %d | Total Inventory Quantity: %d%n",
+				totalProducts, totalShelfQuantity, totalInventoryQuantity);
+		System.out.println(lineSeperatorHead2);
 	}
 }
