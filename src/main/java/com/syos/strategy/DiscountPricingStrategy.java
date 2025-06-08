@@ -7,12 +7,12 @@ import com.syos.model.Discount;
 import com.syos.model.Product;
 import com.syos.repository.DiscountRepository;
 import com.syos.singleton.InventoryManager;
+import com.syos.util.CommonVariables;
 
 public class DiscountPricingStrategy implements PricingStrategy {
 	private final PricingStrategy basePriceStrategy;
 	private final DiscountRepository discountRepository = new DiscountRepository();
 	private final InventoryManager inventoryManager = InventoryManager.getInstance(null);
-	private static final double MIN_TOTAL_PRICE = 0.0;
 
 	public DiscountPricingStrategy(PricingStrategy basePriceStrategy) {
 		this.basePriceStrategy = basePriceStrategy;
@@ -22,7 +22,7 @@ public class DiscountPricingStrategy implements PricingStrategy {
 	public double calculate(Product product, int quantity) {
 		double baseTotal = basePriceStrategy.calculate(product, quantity);
 		int availableStock = inventoryManager.getQuantityOnShelf(product.getCode());
-		if (availableStock <= 0) {
+		if (availableStock <= CommonVariables.MINIMUMQUANTITY) {
 			return baseTotal;
 		}
 		List<Discount> activeDiscounts = discountRepository.findActiveDiscounts(product.getCode(), LocalDate.now());
@@ -38,7 +38,8 @@ public class DiscountPricingStrategy implements PricingStrategy {
 			switch (discount.getType()) {
 			case PERCENT:
 
-				discountedTotal = baseTotal * (1.0 - (discount.getValue() / 100.0));
+				discountedTotal = baseTotal * (CommonVariables.oneHundredPercent
+						- (discount.getValue() / CommonVariables.percentageDevisor));
 				break;
 			case AMOUNT:
 				discountedTotal = baseTotal - discount.getValue();
@@ -52,6 +53,6 @@ public class DiscountPricingStrategy implements PricingStrategy {
 			}
 		}
 
-		return Math.max(MIN_TOTAL_PRICE, bestDiscountedTotal);
+		return Math.max(CommonVariables.MIN_TOTAL_PRICE, bestDiscountedTotal);
 	}
 }

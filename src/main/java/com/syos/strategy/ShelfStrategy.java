@@ -7,15 +7,15 @@ import com.syos.model.StockBatch; // Keep for back-store operations
 import com.syos.model.ShelfStock; // For shelf operations
 
 public interface ShelfStrategy {
-    // For selecting from back-store batches to move to shelf
-    StockBatch selectBatchFromBackStore(List<StockBatch> batches);
+	// for selecting from inventory batches to move to shelf
+	StockBatch selectBatchFromBackStore(List<StockBatch> batches);
 
-    // For selecting from shelf batches to deduct from
-    ShelfStock selectBatchFromShelf(List<ShelfStock> batches);
+	// for selecting from shelf batches to deduct from
+	ShelfStock selectBatchFromShelf(List<ShelfStock> batches);
 
-    // Comparator for StockBatch (used by back-store selection)
-    Comparator<StockBatch> getStockBatchComparator();
+	// comparator for StockBatch used by inventory selection
+	Comparator<StockBatch> getStockBatchComparator();
 
-    // Comparator for ShelfStock (used by shelf selection)
-    Comparator<ShelfStock> getShelfStockComparator();
+	// comparator for ShelfStock used by shelf selection
+	Comparator<ShelfStock> getShelfStockComparator();
 }

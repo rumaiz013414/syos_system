@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 public class ReportService {
 	private final Scanner scanner = new Scanner(System.in);
 	private final ReportRepository reportRepository = new ReportRepository();
+	
+	String lineSeperatorHead = "===================================================================================";
 
 	public void run() {
 		while (true) {
@@ -81,7 +83,8 @@ public class ReportService {
 	private void displaySalesReport(LocalDate reportDate, List<BillReportDTO> billReportDTOs,
 			double totalDailyRevenue) {
 		System.out.println("\nSales Report for: " + reportDate.format(DateTimeFormatter.ISO_DATE));
-		System.out.println("===================================================================================");
+		System.out.println(lineSeperatorHead);
+		
 
 		for (BillReportDTO billDTO : billReportDTOs) {
 			System.out.printf(
@@ -110,6 +113,6 @@ public class ReportService {
 		}
 		System.out.printf("Total revenue for %s: %.2f%n", reportDate.format(DateTimeFormatter.ISO_DATE),
 				totalDailyRevenue);
-		System.out.println("===================================================================================");
+		System.out.println(lineSeperatorHead);
 	}
 }

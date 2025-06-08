@@ -14,7 +14,6 @@ public class CustomerRegistrationService {
 	}
 
 	public Customer register(CustomerRegisterRequestDTO request) throws Exception {
-		// Basic validation for DTO fields (already in your code)
 		if (request.getFirstName() == null || request.getFirstName().isEmpty()) {
 			throw new IllegalArgumentException("First name cannot be empty.");
 		}

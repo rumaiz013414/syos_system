@@ -16,6 +16,7 @@ import com.syos.singleton.InventoryManager;
 import com.syos.strategy.DiscountPricingStrategy;
 import com.syos.strategy.ExpiryAwareFifoStrategy;
 import com.syos.strategy.NoDiscountStrategy;
+import com.syos.util.CommonVariables;
 
 public class StoreBillingService {
 	private final ProductRepository productReposiotry = new ProductRepository();
@@ -25,12 +26,13 @@ public class StoreBillingService {
 			new DiscountPricingStrategy(new NoDiscountStrategy()));
 	private final Scanner inputScanner = new Scanner(System.in);
 	private final InventoryManager inventoryManager;
-	private static final int STOCK_ALERT_THRESHOLD = 50;
 
 	public StoreBillingService() {
 		inventoryManager = InventoryManager.getInstance(new ExpiryAwareFifoStrategy());
-		inventoryManager.addObserver(new StockAlertService(STOCK_ALERT_THRESHOLD));
+		inventoryManager.addObserver(new StockAlertService(CommonVariables.STOCK_ALERT_THRESHOLD));
 	}
+
+	String lineSeperator = "---------------------------------------------------------------------------";
 
 	public void run() {
 		while (true) {
@@ -141,9 +143,9 @@ public class StoreBillingService {
 
 			System.out.println("\n--- Final Bill #" + bill.getSerialNumber() + " ---");
 			System.out.println("Date: " + bill.getBillDate());
-			System.out.println("---------------------------------------------------------------------------");
+			System.out.println(lineSeperator);
 			System.out.printf("%-25s %-10s %-10s %-10s %-10s%n", "Item", "Qty", "Unit Price", "Subtotal", "Discount");
-			System.out.println("---------------------------------------------------------------------------");
+			System.out.println(lineSeperator);
 
 			for (BillItem item : billItems) {
 				String productName = item.getProduct().getName();
@@ -162,11 +164,11 @@ public class StoreBillingService {
 							totalPrice, "-");
 				}
 			}
-			System.out.println("---------------------------------------------------------------------------");
+			System.out.println(lineSeperator);
 			System.out.printf("%-50s Total: %.2f%n", "", bill.getTotalAmount());
 			System.out.printf("%-50s Cash Tendered: %.2f%n", "", bill.getCashTendered());
 			System.out.printf("%-50s Change Returned: %.2f%n", "", bill.getChangeReturned());
-			System.out.println("---------------------------------------------------------------------------");
+			System.out.println(lineSeperator);
 			System.out.println("Sales Invoice");
 
 			System.out.print("\nProcess another bill? (yes/no): ");

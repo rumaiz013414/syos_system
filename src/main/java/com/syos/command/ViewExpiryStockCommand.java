@@ -17,6 +17,10 @@ public class ViewExpiryStockCommand implements Command {
 		this.scanner = scanner;
 	}
 
+	String lineSeperator = "------------------------------------------------------------------------------------------";
+
+	String tableHeader = "%-15s %-15s %-15s %-15s %-15s %-15s%n";
+
 	@Override
 	public void execute() {
 		System.out.println(newLine + "--- View Close to Expiry Stocks on Shelf ---");
@@ -43,10 +47,6 @@ public class ViewExpiryStockCommand implements Command {
 			productCodesToIterate = List.of(productCodeFilter);
 		}
 
-		String TABLE_SEPARATOR = "------------------------------------------------------------------------------------------";
-
-		String TABLE_HEADER_FORMAT = "%-15s %-15s %-15s %-15s %-15s %-15s%n";
-
 		StringBuilder tableContent = new StringBuilder();
 		boolean anyProductDisplayedInTable = false;
 
@@ -62,31 +62,31 @@ public class ViewExpiryStockCommand implements Command {
 			if (!expiringBatches.isEmpty()) {
 				anyProductDisplayedInTable = true;
 				StockBatch firstBatch = expiringBatches.get(CommonVariables.MININUMDAYS);
-				tableContent.append(String.format(TABLE_HEADER_FORMAT, productCode, quantityOnShelf, firstBatch.getId(),
+				tableContent.append(String.format(tableHeader, productCode, quantityOnShelf, firstBatch.getId(),
 						firstBatch.getExpiryDate(), firstBatch.getPurchaseDate(), firstBatch.getQuantityRemaining()));
 
 				for (int iterate = 1; iterate < expiringBatches.size(); iterate++) {
 					StockBatch batch = expiringBatches.get(iterate);
-					tableContent.append(String.format(TABLE_HEADER_FORMAT, "", "", batch.getId(), batch.getExpiryDate(),
+					tableContent.append(String.format(tableHeader, "", "", batch.getId(), batch.getExpiryDate(),
 							batch.getPurchaseDate(), batch.getQuantityRemaining()));
 				}
 			} else if (!productCodeFilter.isEmpty()) {
 
 				anyProductDisplayedInTable = true;
-				tableContent.append(
-						String.format(TABLE_HEADER_FORMAT, productCode, quantityOnShelf, "N/A", "N/A", "N/A", "N/A"));
+				tableContent
+						.append(String.format(tableHeader, productCode, quantityOnShelf, "N/A", "N/A", "N/A", "N/A"));
 
 			}
 		}
 
 		if (anyProductDisplayedInTable) {
 			System.out.printf("%n--- Products with Batches Expiring in Next %d Days ---%n", daysThreshold);
-			System.out.println(TABLE_SEPARATOR);
-			System.out.printf(TABLE_HEADER_FORMAT, "Product Code", "Shelf Qty", "Batch ID", "Exp. Date", "Purch. Date",
+			System.out.println(lineSeperator);
+			System.out.printf(tableHeader, "Product Code", "Shelf Qty", "Batch ID", "Exp. Date", "Purch. Date",
 					"Batch Rem. Qty");
-			System.out.println(TABLE_SEPARATOR);
+			System.out.println(lineSeperator);
 			System.out.print(tableContent.toString());
-			System.out.println(TABLE_SEPARATOR);
+			System.out.println(lineSeperator);
 		} else {
 			if (!productCodeFilter.isEmpty()) {
 				System.out.printf(

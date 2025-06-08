@@ -17,6 +17,8 @@ public class ViewExpiringBatchesCommand implements Command {
 		this.scanner = scanner;
 	}
 
+	String lineSeperator = "--------------------------------------------------------------------------";
+
 	@Override
 	public void execute() {
 		System.out.println(newLine + "--- View Expiring Stock Batches (Back-Store) ---");
@@ -41,14 +43,14 @@ public class ViewExpiringBatchesCommand implements Command {
 		}
 
 		System.out.printf("%n--- Stock Batches Expiring in Next %d Days ---%n", daysThreshold);
-		System.out.println("--------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 		System.out.printf("%-10s %-15s %-15s %-15s %-15s%n", "Batch ID", "Product Code", "Expiry Date", "Purch Date",
 				"Remaining Qty");
-		System.out.println("--------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 		for (StockBatch batch : expiringBatches) {
 			System.out.printf("%-10d %-15s %-15s %-15s %-15d%n", batch.getId(), batch.getProductCode(),
 					batch.getExpiryDate(), batch.getPurchaseDate(), batch.getQuantityRemaining());
 		}
-		System.out.println("--------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 	}
 }

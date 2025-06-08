@@ -21,6 +21,8 @@ public class ViewAllProductsWithDiscountsCommand implements Command {
 		this.productRepository = productRepository;
 	}
 
+	String lineSeperator = "------------------------------------------------------------------------------------------------------";
+
 	@Override
 	public void execute() {
 		System.out.println(newLine + "--- Products with Active Discounts ---");
@@ -53,11 +55,9 @@ public class ViewAllProductsWithDiscountsCommand implements Command {
 
 		if (hasDiscountsToDisplay) {
 			System.out.printf("%-15s %-30s %-10s %s%n", "Product Code", "Product Name", "Price", "Active Discounts");
-			System.out.println(
-					"------------------------------------------------------------------------------------------------------");
+			System.out.println(lineSeperator);
 			System.out.print(tableRows.toString());
-			System.out.println(
-					"------------------------------------------------------------------------------------------------------");
+			System.out.println(lineSeperator);
 		} else {
 			System.out.println("No products currently have active discounts.");
 		}

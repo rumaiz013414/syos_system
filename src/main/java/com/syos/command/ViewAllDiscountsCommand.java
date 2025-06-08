@@ -14,6 +14,8 @@ public class ViewAllDiscountsCommand implements Command {
 		this.discountRepository = discountRepository;
 	}
 
+	String lineSeperator = "-----------------------------------------------------------------------------------------";
+
 	@Override
 	public void execute() {
 		System.out.println(System.lineSeparator() + "--- All Available Discounts ---");
@@ -26,7 +28,7 @@ public class ViewAllDiscountsCommand implements Command {
 
 		System.out.printf("%-5s %-20s %-15s %-15s %-15s %-15s%n", "ID", "Name", "Type", "Value", "Start Date",
 				"End Date");
-		System.out.println("-----------------------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 
 		for (Discount discount : discounts) {
 			String typeDisplay = (discount.getType() == DiscountType.PERCENT) ? "Percentage" : "Fixed Amount";
@@ -37,6 +39,6 @@ public class ViewAllDiscountsCommand implements Command {
 			System.out.printf("%-5d %-20s %-15s %-15s %-15s %-15s%n", discount.getId(), discount.getName(), typeDisplay,
 					valueDisplay, discount.getStart().toString(), discount.getEnd().toString());
 		}
-		System.out.println("-----------------------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 	}
 }

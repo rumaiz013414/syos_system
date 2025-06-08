@@ -16,7 +16,7 @@ public class ViewStockCommand implements Command {
 		this.scanner = scanner;
 	}
 
-	String TABLE_SEPARATOR = "-----------------------------------------------------------------------------------------------------------------";
+	String lineSeperator = "-----------------------------------------------------------------------------------------------------------------";
 
 	@Override
 	public void execute() {
@@ -54,10 +54,10 @@ public class ViewStockCommand implements Command {
 	}
 
 	private void printStockTable(List<String> productCodes) {
-		System.out.println(TABLE_SEPARATOR);
+		System.out.println(lineSeperator);
 		System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15s%n", "Product Code", "Shelf Qty", "Batch ID",
 				"Purch. Date", "Exp. Date", "Batch Rem. Qty");
-		System.out.println(TABLE_SEPARATOR);
+		System.out.println(lineSeperator);
 
 		boolean anyProductFoundWithStock = false;
 
@@ -105,7 +105,7 @@ public class ViewStockCommand implements Command {
 		if (!anyProductFoundWithStock && !productCodes.isEmpty()) {
 			System.out.println("No stock data found for the selected products.");
 		}
-		System.out.println(TABLE_SEPARATOR);
+		System.out.println(lineSeperator);
 		System.out.println(
 				"Note: 'Shelf Qty' is the total quantity on the shelf. 'Batch Rem. Qty' is stock remaining in back-store batches.");
 	}

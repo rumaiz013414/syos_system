@@ -6,16 +6,18 @@ import com.syos.model.Discount;
 import com.syos.model.Product;
 import com.syos.repository.DiscountRepository;
 import com.syos.repository.ProductRepository;
+import com.syos.util.CommonVariables;
 
 public class DiscountAssignmentService {
 	private final Scanner scanner;
-	private final DiscountRepository discountRepo;
-	private final ProductRepository productRepo;
+	private final DiscountRepository discountRepository;
+	private final ProductRepository productRepository;
 
-	public DiscountAssignmentService(Scanner scanner, DiscountRepository discountRepo, ProductRepository productRepo) {
+	public DiscountAssignmentService(Scanner scanner, DiscountRepository discountRepository,
+			ProductRepository productRepository) {
 		this.scanner = scanner;
-		this.discountRepo = discountRepo;
-		this.productRepo = productRepo;
+		this.discountRepository = discountRepository;
+		this.productRepository = productRepository;
 	}
 
 	public void assignDiscountToProduct() {
@@ -27,7 +29,7 @@ public class DiscountAssignmentService {
 			return;
 		}
 
-		Product product = productRepo.findByCode(productCode);
+		Product product = productRepository.findByCode(productCode);
 		if (product == null) {
 			System.out.println("No such product: " + productCode);
 			return;
@@ -37,12 +39,12 @@ public class DiscountAssignmentService {
 		int discountId;
 		try {
 			discountId = Integer.parseInt(scanner.nextLine().trim());
-			if (discountId <= 0) {
+			if (discountId <= CommonVariables.MINIMUMAMOUNT) {
 				System.out.println("Discount ID must be a positive number.");
 				return;
 			}
 
-			Discount existingDiscount = discountRepo.findById(discountId);
+			Discount existingDiscount = discountRepository.findById(discountId);
 			if (existingDiscount == null) {
 				System.out.println("No discount found with ID: " + discountId);
 				System.out.println("Please create the discount first using 'Create new discount' option.");
@@ -59,7 +61,7 @@ public class DiscountAssignmentService {
 		}
 
 		try {
-			discountRepo.linkProductToDiscount(productCode, discountId);
+			discountRepository.linkProductToDiscount(productCode, discountId);
 			System.out.printf("Discount ID %d assigned to product %s.%n", discountId, productCode);
 		} catch (RuntimeException e) {
 			System.out.println("Failed to assign discount: " + e.getMessage());

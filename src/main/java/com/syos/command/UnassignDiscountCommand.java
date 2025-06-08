@@ -22,6 +22,8 @@ public class UnassignDiscountCommand implements Command {
 		this.productRepository = productRepository;
 	}
 
+	String lineSeperator = "--------------------------------------------------";
+
 	@Override
 	public void execute() {
 		System.out.println("\n--- Unassign Discount from Product ---");
@@ -44,14 +46,14 @@ public class UnassignDiscountCommand implements Command {
 
 		System.out.println("\nActive discounts for " + product.getName() + " (" + productCode + "):");
 		System.out.printf("%-5s %-20s %-10s %-10s%n", "ID", "Name", "Type", "Value");
-		System.out.println("--------------------------------------------------");
+		System.out.println(lineSeperator);
 		for (Discount discount : currentDiscounts) {
 			String typeDisplay = (discount.getType() == DiscountType.PERCENT) ? "PERCENT" : "AMOUNT";
 			String valueDisplay = String.format("%.2f", discount.getValue());
 			System.out.printf("%-5d %-20s %-10s %-10s%n", discount.getId(), discount.getName(), typeDisplay,
 					valueDisplay);
 		}
-		System.out.println("--------------------------------------------------");
+		System.out.println(lineSeperator);
 
 		System.out.print("Enter Discount ID to unassign: ");
 		int discountId;

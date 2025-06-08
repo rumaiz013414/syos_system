@@ -5,79 +5,65 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.syos.model.StockBatch;
+import com.syos.util.CommonVariables;
 import com.syos.model.ShelfStock;
 
 public class ExpiryAwareFifoStrategy implements ShelfStrategy {
 
-    // Implementation for selecting from back-store batches
-    @Override
-    public StockBatch selectBatchFromBackStore(List<StockBatch> batches) {
-        if (batches == null || batches.isEmpty()) {
-            return null;
-        }
+	// implementation for selecting from inventory batches
+	@Override
+	public StockBatch selectBatchFromBackStore(List<StockBatch> batches) {
+		if (batches == null || batches.isEmpty()) {
+			return null;
+		}
 
-        LocalDate cutoff = LocalDate.now().plusWeeks(1);
+		LocalDate cutoff = LocalDate.now().plusWeeks(CommonVariables.discountExpiryWeeks);
 
-        // Prioritize batches that are not expiring soon
-        StockBatch bestSafe = batches.stream()
-                .filter(batch -> batch.getExpiryDate().isAfter(cutoff))
-                .min(Comparator
-                        .comparing(StockBatch::getPurchaseDate) // FIFO for safe batches
-                        .thenComparing(StockBatch::getExpiryDate)) // Secondary sort by expiry
-                .orElse(null);
+		// prioritize batches that are not expiring soon
+		StockBatch bestSafe = batches.stream().filter(batch -> batch.getExpiryDate().isAfter(cutoff))
+				.min(Comparator.comparing(StockBatch::getPurchaseDate).thenComparing(StockBatch::getExpiryDate))
+				.orElse(null);
 
-        if (bestSafe != null) {
-            return bestSafe;
-        }
+		if (bestSafe != null) {
+			return bestSafe;
+		}
 
-        // If no safe batches, pick the oldest (earliest purchase date) regardless of expiry
-        return batches.stream()
-                .min(Comparator
-                        .comparing(StockBatch::getPurchaseDate)
-                        .thenComparing(StockBatch::getExpiryDate)) // Secondary sort by expiry
-                .orElse(null);
-    }
+		return batches.stream()
+				.min(Comparator.comparing(StockBatch::getPurchaseDate).thenComparing(StockBatch::getExpiryDate))
 
-    // Implementation for selecting from shelf batches (uses ShelfStock)
-    @Override
-    public ShelfStock selectBatchFromShelf(List<ShelfStock> batches) {
-        if (batches == null || batches.isEmpty()) {
-            return null;
-        }
+				.orElse(null);
+	}
 
-        LocalDate cutoff = LocalDate.now().plusWeeks(1);
+	// implementation for selecting from shelf batches
+	@Override
+	public ShelfStock selectBatchFromShelf(List<ShelfStock> batches) {
+		if (batches == null || batches.isEmpty()) {
+			return null;
+		}
 
-        // Find best safe (non-expiring soon) batch based on earliest expiry date
-        ShelfStock bestSafe = batches.stream()
-                .filter(batch -> batch.getExpiryDate().isAfter(cutoff))
-                .min(Comparator
-                        .comparing(ShelfStock::getExpiryDate)
-                        .thenComparing(ShelfStock::getBatchId)) // Assuming smaller batchId means older/FIFO for shelf
-                .orElse(null);
+		LocalDate cutoff = LocalDate.now().plusWeeks(CommonVariables.discountExpiryWeeks);
 
-        if (bestSafe != null) {
-            return bestSafe;
-        }
+		// find best safe non-expiring soon batch based on earliest expiry date
+		ShelfStock bestSafe = batches.stream().filter(batch -> batch.getExpiryDate().isAfter(cutoff))
+				.min(Comparator.comparing(ShelfStock::getExpiryDate).thenComparing(ShelfStock::getBatchId))
+				.orElse(null);
 
-        // If no "safe" batches, return the oldest batch (earliest expiry)
-        return batches.stream()
-                .min(Comparator
-                        .comparing(ShelfStock::getExpiryDate)
-                        .thenComparing(ShelfStock::getBatchId)) // Assuming smaller batchId means older/FIFO for shelf
-                .orElse(null);
-    }
+		if (bestSafe != null) {
+			return bestSafe;
+		}
 
-    @Override
-    public Comparator<StockBatch> getStockBatchComparator() {
-        return Comparator
-                .comparing(StockBatch::getPurchaseDate)
-                .thenComparing(StockBatch::getExpiryDate);
-    }
+		return batches.stream()
+				.min(Comparator.comparing(ShelfStock::getExpiryDate).thenComparing(ShelfStock::getBatchId))
+				.orElse(null);
+	}
 
-    @Override
-    public Comparator<ShelfStock> getShelfStockComparator() {
-        return Comparator
-                .comparing(ShelfStock::getExpiryDate)
-                .thenComparing(ShelfStock::getBatchId);
-    }
+	@Override
+	public Comparator<StockBatch> getStockBatchComparator() {
+		return Comparator.comparing(StockBatch::getPurchaseDate).thenComparing(StockBatch::getExpiryDate);
+	}
+
+	@Override
+	public Comparator<ShelfStock> getShelfStockComparator() {
+		return Comparator.comparing(ShelfStock::getExpiryDate).thenComparing(ShelfStock::getBatchId);
+	}
 }

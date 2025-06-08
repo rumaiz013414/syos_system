@@ -13,6 +13,8 @@ public class ViewAllProductsCommand implements Command {
 		this.productRepository = productRepository;
 	}
 
+	String lineSeperator = "----------------------------------------------------";
+
 	@Override
 	public void execute() {
 		System.out.println(newLine + "--- Viewing All Products ---");
@@ -25,15 +27,15 @@ public class ViewAllProductsCommand implements Command {
 				return;
 			}
 
-			System.out.println("----------------------------------------------------");
+			System.out.println(lineSeperator);
 			System.out.printf("%-15s %-25s %-10s%n", "Product Code", "Product Name", "Price (LKR)");
-			System.out.println("----------------------------------------------------");
+			System.out.println(lineSeperator);
 
 			for (Product product : products) {
 				System.out.printf("%-15s %-25s %-10.2f%n", product.getCode(), product.getName(), product.getPrice());
 			}
 
-			System.out.println("----------------------------------------------------");
+			System.out.println(lineSeperator);
 
 		} catch (RuntimeException e) {
 			System.out.println("Error retrieving products: " + e.getMessage());

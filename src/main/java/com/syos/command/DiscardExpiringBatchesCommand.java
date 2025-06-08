@@ -16,6 +16,8 @@ public class DiscardExpiringBatchesCommand implements Command {
 		this.scanner = scanner;
 	}
 
+	String lineSeperator = "--------------------------------------------------------------------------------------------------";
+
 	@Override
 	public void execute() {
 		System.out.println("\n--- Discard Expiring Stock Batches (Back-Store) ---");
@@ -42,18 +44,15 @@ public class DiscardExpiringBatchesCommand implements Command {
 		}
 
 		System.out.printf("%n--- Batches Expiring in Next %d Days ---%n", daysThreshold);
-		System.out.println(
-				"--------------------------------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 		System.out.printf("%-10s %-15s %-15s %-15s %-15s%n", "Batch ID", "Product Code", "Expiry Date", "Purch Date",
 				"Remaining Qty");
-		System.out.println(
-				"--------------------------------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 		for (StockBatch batch : expiringBatches) {
 			System.out.printf("%-10d %-15s %-15s %-15s %-15d%n", batch.getId(), batch.getProductCode(),
 					batch.getExpiryDate(), batch.getPurchaseDate(), batch.getQuantityRemaining());
 		}
-		System.out.println(
-				"--------------------------------------------------------------------------------------------------");
+		System.out.println(lineSeperator);
 
 		System.out.print("\nEnter Batch ID to discard (0 to cancel): ");
 		int batchId;

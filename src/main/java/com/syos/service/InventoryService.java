@@ -91,9 +91,9 @@ public class InventoryService {
 				break;
 			}
 
-			Command cmd = commandMap.get(choice);
-			if (cmd != null) {
-				cmd.execute();
+			Command command = commandMap.get(choice);
+			if (command != null) {
+				command.execute();
 			} else {
 				System.out.println("Invalid option. Please choose from the available numbers.");
 			}

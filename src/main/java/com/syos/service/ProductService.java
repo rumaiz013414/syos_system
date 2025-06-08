@@ -2,15 +2,16 @@ package com.syos.service;
 
 import com.syos.model.Product;
 import com.syos.repository.ProductRepository;
+import com.syos.util.CommonVariables;
 
 public class ProductService {
 	private final ProductRepository productRepository = new ProductRepository();
 
 	public Product addProduct(String code, String name, double price) {
-		if (code.length() > 10) {
+		if (code.length() > CommonVariables.MAX_CODE_LENGTH) {
 			throw new IllegalArgumentException("Product code must be at most 10 characters");
 		}
-		if (name.length() > 100) {
+		if (name.length() > CommonVariables.MAX_PRODUCT_NAME_LENGTH) {
 			throw new IllegalArgumentException("Product name must be at most 100 characters");
 		}
 
@@ -18,10 +19,10 @@ public class ProductService {
 			throw new IllegalArgumentException("Product code already exists: " + code);
 		}
 
-		Product p = new Product(code, name, price);
+		Product poduct = new Product(code, name, price);
 
-		productRepository.add(p);
+		productRepository.add(poduct);
 
-		return p;
+		return poduct;
 	}
 }

@@ -40,7 +40,6 @@ public class OnlineStoreService {
 			}
 		}
 
-		// post-login/registration menu
 		while (true) {
 			System.out.println("\n=== Online Store Menu ===");
 			System.out.println("1) Browse Products");
@@ -72,9 +71,9 @@ public class OnlineStoreService {
 		System.out.print("Password: ");
 		String password = scanner.nextLine().trim();
 
-		var req = new CustomerRegisterRequestDTO(firstName, lastName, email, password, UserType.CUSTOMER);
+		var request = new CustomerRegisterRequestDTO(firstName, lastName, email, password, UserType.CUSTOMER);
 		try {
-			Customer customer = registrationService.register(req);
+			Customer customer = registrationService.register(request);
 			System.out.printf(" Registered: %s (%s)%n", customer.getFullName(), customer.getEmail());
 			return customer;
 		} catch (Exception e) {
@@ -112,19 +111,19 @@ public class OnlineStoreService {
 			return;
 		}
 		System.out.println("\nAvailable Products:");
-		for (Product p : products) {
-			System.out.printf(" - %s (%s): %.2f%n", p.getName(), p.getCode(), p.getPrice());
+		for (Product product : products) {
+			System.out.printf(" - %s (%s): %.2f%n", product.getName(), product.getCode(), product.getPrice());
 		}
 	}
 
 	private void searchProduct() {
 		System.out.print("Enter product code: ");
 		String code = scanner.nextLine().trim();
-		Product p = productRepository.findByCode(code);
-		if (p == null) {
+		Product product = productRepository.findByCode(code);
+		if (product == null) {
 			System.out.println(" Product not found.");
 		} else {
-			System.out.printf(" Found: %s (%s) — %.2f%n", p.getName(), p.getCode(), p.getPrice());
+			System.out.printf(" Found: %s (%s) — %.2f%n", product.getName(), product.getCode(), product.getPrice());
 		}
 	}
 }
