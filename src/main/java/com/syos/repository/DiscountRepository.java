@@ -21,16 +21,17 @@ public class DiscountRepository {
 				    FROM discounts
 				    WHERE id = ?
 				""";
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-			ps.setInt(1, discountId);
-			ResultSet rs = ps.executeQuery();
+			preparedStatement.setInt(1, discountId);
+			ResultSet resultSet = preparedStatement.executeQuery();
 
-			if (rs.next()) {
-				DiscountType type = DiscountType.valueOf(rs.getString("type"));
-				return new Discount(rs.getInt("id"), rs.getString("name"), type, rs.getDouble("value"),
-						rs.getDate("start_date").toLocalDate(), rs.getDate("end_date").toLocalDate());
+			if (resultSet.next()) {
+				DiscountType type = DiscountType.valueOf(resultSet.getString("type"));
+				return new Discount(resultSet.getInt("id"), resultSet.getString("name"), type,
+						resultSet.getDouble("value"), resultSet.getDate("start_date").toLocalDate(),
+						resultSet.getDate("end_date").toLocalDate());
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error finding discount by ID: " + discountId, e);
@@ -55,18 +56,19 @@ public class DiscountRepository {
 
 		List<Discount> result = new ArrayList<>();
 
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-			ps.setString(1, productCode);
-			ps.setDate(2, Date.valueOf(date));
-			ps.setDate(3, Date.valueOf(date));
+			preparedStatement.setString(1, productCode);
+			preparedStatement.setDate(2, Date.valueOf(date));
+			preparedStatement.setDate(3, Date.valueOf(date));
 
-			ResultSet rs = ps.executeQuery();
-			while (rs.next()) {
-				DiscountType type = DiscountType.valueOf(rs.getString("type"));
-				result.add(new Discount(rs.getInt("id"), rs.getString("name"), type, rs.getDouble("value"),
-						rs.getDate("start_date").toLocalDate(), rs.getDate("end_date").toLocalDate()));
+			ResultSet resultSet = preparedStatement.executeQuery();
+			while (resultSet.next()) {
+				DiscountType type = DiscountType.valueOf(resultSet.getString("type"));
+				result.add(new Discount(resultSet.getInt("id"), resultSet.getString("name"), type,
+						resultSet.getDouble("value"), resultSet.getDate("start_date").toLocalDate(),
+						resultSet.getDate("end_date").toLocalDate()));
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error loading active discounts for product " + productCode, e);
@@ -83,17 +85,17 @@ public class DiscountRepository {
 				RETURNING id
 				""";
 
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setString(1, discountName);
-			ps.setString(2, discountType.name());
-			ps.setDouble(3, discountValue);
-			ps.setDate(4, Date.valueOf(startDate));
-			ps.setDate(5, Date.valueOf(endDate));
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+			preparedStatement.setString(1, discountName);
+			preparedStatement.setString(2, discountType.name());
+			preparedStatement.setDouble(3, discountValue);
+			preparedStatement.setDate(4, Date.valueOf(startDate));
+			preparedStatement.setDate(5, Date.valueOf(endDate));
 
-			ResultSet rs = ps.executeQuery();
-			if (rs.next()) {
-				return rs.getInt("id");
+			ResultSet resultSet = preparedStatement.executeQuery();
+			if (resultSet.next()) {
+				return resultSet.getInt("id");
 			} else {
 				throw new RuntimeException("Failed to create discount (no ID returned).");
 			}
@@ -108,11 +110,11 @@ public class DiscountRepository {
 				VALUES (?, ?)
 				""";
 
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setString(1, productCode);
-			ps.setInt(2, discountId);
-			ps.executeUpdate();
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+			preparedStatement.setString(1, productCode);
+			preparedStatement.setInt(2, discountId);
+			preparedStatement.executeUpdate();
 		} catch (SQLException e) {
 			throw new RuntimeException("Error linking product " + productCode + " to discount " + discountId, e);
 		}
@@ -125,14 +127,15 @@ public class DiscountRepository {
 				    ORDER BY name ASC
 				""";
 		List<Discount> discounts = new ArrayList<>();
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql);
-				ResultSet rs = ps.executeQuery()) {
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				ResultSet resultSet = preparedStatement.executeQuery()) {
 
-			while (rs.next()) {
-				DiscountType type = DiscountType.valueOf(rs.getString("type"));
-				discounts.add(new Discount(rs.getInt("id"), rs.getString("name"), type, rs.getDouble("value"),
-						rs.getDate("start_date").toLocalDate(), rs.getDate("end_date").toLocalDate()));
+			while (resultSet.next()) {
+				DiscountType type = DiscountType.valueOf(resultSet.getString("type"));
+				discounts.add(new Discount(resultSet.getInt("id"), resultSet.getString("name"), type,
+						resultSet.getDouble("value"), resultSet.getDate("start_date").toLocalDate(),
+						resultSet.getDate("end_date").toLocalDate()));
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error retrieving all discounts", e);
@@ -151,18 +154,19 @@ public class DiscountRepository {
 				    ORDER BY d.name ASC
 				""";
 		List<Discount> discounts = new ArrayList<>();
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-			ps.setString(1, productCode);
-			ps.setDate(2, Date.valueOf(asOfDate));
-			ps.setDate(3, Date.valueOf(asOfDate));
-			ResultSet rs = ps.executeQuery();
+			preparedStatement.setString(1, productCode);
+			preparedStatement.setDate(2, Date.valueOf(asOfDate));
+			preparedStatement.setDate(3, Date.valueOf(asOfDate));
+			ResultSet resultSet = preparedStatement.executeQuery();
 
-			while (rs.next()) {
-				DiscountType type = DiscountType.valueOf(rs.getString("type"));
-				discounts.add(new Discount(rs.getInt("id"), rs.getString("name"), type, rs.getDouble("value"),
-						rs.getDate("start_date").toLocalDate(), rs.getDate("end_date").toLocalDate()));
+			while (resultSet.next()) {
+				DiscountType type = DiscountType.valueOf(resultSet.getString("type"));
+				discounts.add(new Discount(resultSet.getInt("id"), resultSet.getString("name"), type,
+						resultSet.getDouble("value"), resultSet.getDate("start_date").toLocalDate(),
+						resultSet.getDate("end_date").toLocalDate()));
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error finding discounts for product " + productCode, e);
@@ -175,11 +179,11 @@ public class DiscountRepository {
 				DELETE FROM product_discounts
 				WHERE product_code = ? AND discount_id = ?
 				""";
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setString(1, productCode);
-			ps.setInt(2, discountId);
-			int rowsAffected = ps.executeUpdate();
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+			preparedStatement.setString(1, productCode);
+			preparedStatement.setInt(2, discountId);
+			int rowsAffected = preparedStatement.executeUpdate();
 			return rowsAffected > 0;
 		} catch (SQLException e) {
 			throw new RuntimeException("Error unassigning discount " + discountId + " from product " + productCode, e);

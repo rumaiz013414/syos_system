@@ -16,96 +16,87 @@ import java.util.List;
 
 public class ReportRepository {
 
-    private final ProductRepository productRepository = new ProductRepository();
+	private final ProductRepository productRepository = new ProductRepository();
 
-    public double getTotalRevenue(LocalDate date) {
-        String sql = """
-                SELECT SUM(total_amount)
-                FROM bill
-                WHERE DATE(bill_date) = ?
-                """;
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+	public double getTotalRevenue(LocalDate date) {
+		String sql = """
+				SELECT SUM(total_amount)
+				FROM bill
+				WHERE DATE(bill_date) = ?
+				""";
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            ps.setDate(1, Date.valueOf(date));
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getDouble(1);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error fetching total revenue for date: " + date, e);
-        }
-        return 0.0;
-    }
+			preparedStatement.setDate(1, Date.valueOf(date));
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					return resultSet.getDouble(1);
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException("Error fetching total revenue for date: " + date, e);
+		}
+		return 0.0;
+	}
 
-    public List<Bill> getBillsByDate(LocalDate date) {
-        String sql = """
-                SELECT id, serial_number, bill_date, total_amount, cash_tendered, change_returned, transaction_type
-                FROM bill
-                WHERE DATE(bill_date) = ?
-                ORDER BY serial_number ASC
-                """;
-        List<Bill> bills = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+	public List<Bill> getBillsByDate(LocalDate date) {
+		String sql = """
+				SELECT id, serial_number, bill_date, total_amount, cash_tendered, change_returned, transaction_type
+				FROM bill
+				WHERE DATE(bill_date) = ?
+				ORDER BY serial_number ASC
+				""";
+		List<Bill> bills = new ArrayList<>();
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            ps.setDate(1, Date.valueOf(date));
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Bill bill = new Bill(
-                        rs.getInt("id"),
-                        rs.getInt("serial_number"),
-                        rs.getTimestamp("bill_date"),
-                        rs.getDouble("total_amount"),
-                        rs.getDouble("cash_tendered"),
-                        rs.getDouble("change_returned"),
-                        rs.getString("transaction_type")
-                    );
-                    bills.add(bill);
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error fetching bills for date: " + date, e);
-        }
-        return bills;
-    }
+			preparedStatement.setDate(1, Date.valueOf(date));
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					Bill bill = new Bill(resultSet.getInt("id"), resultSet.getInt("serial_number"),
+							resultSet.getTimestamp("bill_date"), resultSet.getDouble("total_amount"),
+							resultSet.getDouble("cash_tendered"), resultSet.getDouble("change_returned"),
+							resultSet.getString("transaction_type"));
+					bills.add(bill);
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException("Error fetching bills for date: " + date, e);
+		}
+		return bills;
+	}
 
-    public List<BillItem> getBillItemsByBillId(int billId) {
-        String sql = """
-                SELECT id, bill_id, product_code, quantity, total_price, discount_amount
-                FROM bill_item  -- CHANGED from 'bill_items' to 'bill_item'
-                WHERE bill_id = ?
-                ORDER BY id ASC
-                """;
-        List<BillItem> items = new ArrayList<>();
-        try (Connection conn = DatabaseManager.getInstance().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+	public List<BillItem> getBillItemsByBillId(int billId) {
+		String sql = """
+				SELECT id, bill_id, product_code, quantity, total_price, discount_amount
+				FROM bill_item  -- CHANGED from 'bill_items' to 'bill_item'
+				WHERE bill_id = ?
+				ORDER BY id ASC
+				""";
+		List<BillItem> items = new ArrayList<>();
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            ps.setInt(1, billId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    String productCode = rs.getString("product_code");
-                    Product product = productRepository.findByCode(productCode);
+			preparedStatement.setInt(1, billId);
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					String productCode = resultSet.getString("product_code");
+					Product product = productRepository.findByCode(productCode);
 
-                    if (product == null) {
-                        System.err.println("Warning: Product with code '" + productCode + "' not found for bill item ID " + rs.getInt("id") + ". Using placeholder.");
-                        product = new Product(productCode, "[Product Not Found]", 0.0);
-                    }
+					if (product == null) {
+						System.err.println("Warning: Product with code '" + productCode
+								+ "' not found for bill item ID " + resultSet.getInt("id") + ". Using placeholder.");
+						product = new Product(productCode, "[Product Not Found]", 0.0);
+					}
 
-                    items.add(new BillItem(
-                            rs.getInt("id"),
-                            rs.getInt("bill_id"),
-                            product,
-                            rs.getInt("quantity"),
-                            rs.getDouble("total_price"),
-                            rs.getDouble("discount_amount")
-                    ));
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error fetching bill items for bill ID: " + billId, e);
-        }
-        return items;
-    }
+					items.add(new BillItem(resultSet.getInt("id"), resultSet.getInt("bill_id"), product,
+							resultSet.getInt("quantity"), resultSet.getDouble("total_price"),
+							resultSet.getDouble("discount_amount")));
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException("Error fetching bill items for bill ID: " + billId, e);
+		}
+		return items;
+	}
 }

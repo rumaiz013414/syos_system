@@ -25,19 +25,19 @@ public class BillingRepository {
 				VALUES (?, ?, ?, ?, ?)
 				""";
 
-		try (Connection conn = DatabaseManager.getInstance().getConnection()) {
-			conn.setAutoCommit(false);
+		try (Connection connection = DatabaseManager.getInstance().getConnection()) {
+			connection.setAutoCommit(false);
 
 			int generatedBillId;
-			try (PreparedStatement psBill = conn.prepareStatement(insertBill)) {
-				psBill.setInt(1, bill.getSerialNumber());
-				psBill.setTimestamp(2, new Timestamp(bill.getBillDate().getTime()));
-				psBill.setDouble(3, bill.getTotalAmount());
-				psBill.setDouble(4, bill.getCashTendered());
-				psBill.setDouble(5, bill.getChangeReturned());
-				psBill.setString(6, bill.getTransactionType());
+			try (PreparedStatement preparedStatement = connection.prepareStatement(insertBill)) {
+				preparedStatement.setInt(1, bill.getSerialNumber());
+				preparedStatement.setTimestamp(2, new Timestamp(bill.getBillDate().getTime()));
+				preparedStatement.setDouble(3, bill.getTotalAmount());
+				preparedStatement.setDouble(4, bill.getCashTendered());
+				preparedStatement.setDouble(5, bill.getChangeReturned());
+				preparedStatement.setString(6, bill.getTransactionType());
 
-				ResultSet rs = psBill.executeQuery();
+				ResultSet rs = preparedStatement.executeQuery();
 				if (!rs.next()) {
 					throw new RuntimeException("Failed to retrieve generated bill ID.");
 				}
@@ -46,19 +46,19 @@ public class BillingRepository {
 				bill.setId(generatedBillId);
 			}
 
-			try (PreparedStatement psItem = conn.prepareStatement(insertItem)) {
+			try (PreparedStatement preparedStatement = connection.prepareStatement(insertItem)) {
 				for (BillItem item : bill.getItems()) {
-					psItem.setInt(1, generatedBillId);
-					psItem.setString(2, item.getProduct().getCode());
-					psItem.setInt(3, item.getQuantity());
-					psItem.setDouble(4, item.getTotalPrice());
-					psItem.setDouble(5, item.getDiscountAmount());
-					psItem.addBatch();
+					preparedStatement.setInt(1, generatedBillId);
+					preparedStatement.setString(2, item.getProduct().getCode());
+					preparedStatement.setInt(3, item.getQuantity());
+					preparedStatement.setDouble(4, item.getTotalPrice());
+					preparedStatement.setDouble(5, item.getDiscountAmount());
+					preparedStatement.addBatch();
 				}
-				psItem.executeBatch();
+				preparedStatement.executeBatch();
 			}
 
-			conn.commit();
+			connection.commit();
 		} catch (SQLException e) {
 			throw new RuntimeException("Error saving bill & items", e);
 		}
@@ -70,11 +70,11 @@ public class BillingRepository {
 				  FROM bill
 				 WHERE DATE(bill_date) = CURRENT_DATE
 				""";
-		try (Connection conn = DatabaseManager.getInstance().getConnection();
-				PreparedStatement ps = conn.prepareStatement(sql);
-				ResultSet rs = ps.executeQuery()) {
-			if (rs.next()) {
-				return rs.getInt(1);
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				ResultSet result = preparedStatement.executeQuery()) {
+			if (result.next()) {
+				return result.getInt(1);
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException("Error generating daily serial", e);
