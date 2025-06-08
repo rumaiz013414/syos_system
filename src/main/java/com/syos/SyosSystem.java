@@ -2,6 +2,9 @@ package com.syos;
 
 import java.util.Scanner;
 
+import com.syos.repository.ProductRepository;
+import com.syos.repository.ShelfStockRepository;
+import com.syos.repository.StockBatchRepository;
 import com.syos.service.InventoryService;
 import com.syos.service.OnlineStoreService;
 import com.syos.service.ReportService;
@@ -12,14 +15,19 @@ import com.syos.strategy.ShelfStrategy;
 
 public class SyosSystem {
 	public static void main(String[] args) {
+
 		ShelfStrategy strategy = new ExpiryAwareFifoStrategy();
 		InventoryManager.getInstance(strategy);
-
 		Scanner scanner = new Scanner(System.in);
+		ProductRepository productRepository = new ProductRepository();
+		ShelfStockRepository shelfStockRepository = new ShelfStockRepository(productRepository);
+		StockBatchRepository stockBatchRepository = new StockBatchRepository();
 		StoreBillingService billingService = new StoreBillingService();
 		InventoryService inventoryService = new InventoryService();
 		OnlineStoreService onlineStoreService = new OnlineStoreService();
-		ReportService reportService = new ReportService();
+
+		ReportService reportService = new ReportService(scanner, productRepository, shelfStockRepository,
+				stockBatchRepository);
 
 		while (true) {
 			System.out.println("\n=== SYOS Main Menu ===");
@@ -27,6 +35,7 @@ public class SyosSystem {
 			System.out.println(" 2) Online Store");
 			System.out.println(" 3) Inventory");
 			System.out.println(" 4) Reports");
+			System.out.println(" 5) Exit");
 
 			System.out.print("\n Select an option : ");
 			String choice = scanner.nextLine().trim();

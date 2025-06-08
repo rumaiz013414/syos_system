@@ -20,9 +20,17 @@ import java.util.stream.Collectors;
 
 public class ReportRepository {
 
-	private final ProductRepository productRepository = new ProductRepository();
-	private final ShelfStockRepository shelfStockRepository = new ShelfStockRepository(productRepository);
-	private final StockBatchRepository stockBatchRepository = new StockBatchRepository();
+	private final ProductRepository productRepository;
+	private final ShelfStockRepository shelfStockRepository;
+	private final StockBatchRepository stockBatchRepository;
+
+	public ReportRepository(ProductRepository productRepository, ShelfStockRepository shelfStockRepository,
+			StockBatchRepository stockBatchRepository) {
+
+		this.productRepository = productRepository;
+		this.shelfStockRepository = shelfStockRepository;
+		this.stockBatchRepository = stockBatchRepository;
+	}
 
 	public double getTotalRevenue(LocalDate date) {
 		String sql = """
@@ -134,6 +142,7 @@ public class ReportRepository {
 		List<ProductStockReportItemDTO> reportItems = new ArrayList<>();
 
 		List<String> allProductCodes = new ArrayList<>();
+
 		allProductCodes.addAll(shelfStockRepository.getAllProductCodes());
 		allProductCodes.addAll(stockBatchRepository.getAllProductCodesWithBatches());
 		List<String> distinctProductCodes = allProductCodes.stream().distinct().collect(Collectors.toList());
@@ -165,7 +174,6 @@ public class ReportRepository {
 			int numberOfExpiringBatches = expiringBatches.size();
 
 			reportItems.add(new ProductStockReportItemDTO(productCode, product.getName(), product.getPrice(),
-
 					totalQuantityOnShelf, totalQuantityInInventory, earliestExpiryDateOnShelf,
 					earliestExpiryDateInInventory, numberOfExpiringBatches));
 		}
