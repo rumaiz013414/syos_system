@@ -18,24 +18,26 @@ import java.util.stream.Collectors;
 public class ReportService {
 	private final Scanner scanner = new Scanner(System.in);
 	private final ReportRepository reportRepository = new ReportRepository();
-	
+
 	String lineSeperatorHead = "===================================================================================";
 
 	public void run() {
 		while (true) {
 			System.out.println("\n=== Report Menu ===");
 			System.out.println("1) Daily Sales Report (Detailed)");
-			System.out.println("2) Exit");
+			System.out.println("2) All Transactions Report");
+			System.out.println("3) Exit");
 			System.out.print("Choose an option: ");
 			String choice = scanner.nextLine();
 
 			switch (choice) {
-			case "1" -> generateDailySalesReport();
-			case "2" -> {
-				System.out.println("Exiting report menu.");
-				return;
-			}
-			default -> System.out.println("Invalid option.");
+				case "1" -> generateDailySalesReport();
+				case "2" -> generateAllTransactionsReport();
+				case "3" -> {
+					System.out.println("Exiting report menu.");
+					return;
+				}
+				default -> System.out.println("Invalid option.");
 			}
 		}
 	}
@@ -44,12 +46,11 @@ public class ReportService {
 		System.out.println("\n--- Daily Sales Report ---");
 		LocalDate reportDate = null;
 		while (reportDate == null) {
-
 			System.out.print("Enter date for report (YYYY-MM-DD) or press Enter for today's report: ");
 			String dateString = scanner.nextLine().trim();
 
 			if (dateString.isEmpty()) {
-				reportDate = LocalDate.now(); 
+				reportDate = LocalDate.now();
 			} else {
 				try {
 					reportDate = LocalDate.parse(dateString);
@@ -80,11 +81,38 @@ public class ReportService {
 		displaySalesReport(reportDate, billReportDTOs, totalDailyRevenue);
 	}
 
+	private void generateAllTransactionsReport() {
+		System.out.println("\n--- All Transactions Report ---");
+		List<Bill> bills = reportRepository.getAllBills();
+
+		if (bills.isEmpty()) {
+			System.out.println("No sales records found.");
+			return;
+		}
+
+		List<BillReportDTO> billReportDTOs = new ArrayList<>();
+		double totalRevenue = 0.0;
+
+		for (Bill bill : bills) {
+			List<BillItem> billItems = reportRepository.getBillItemsByBillId(bill.getId());
+			List<BillItemReportDTO> itemDTOs = billItems.stream().map(ReportDTOMapper::toBillItemReportDTO)
+					.collect(Collectors.toList());
+			BillReportDTO billDTO = ReportDTOMapper.toBillReportDTO(bill, itemDTOs);
+			billReportDTOs.add(billDTO);
+			totalRevenue += billDTO.getTotalAmount();
+		}
+
+		displaySalesReport(null, billReportDTOs, totalRevenue);
+	}
+
 	private void displaySalesReport(LocalDate reportDate, List<BillReportDTO> billReportDTOs,
-			double totalDailyRevenue) {
-		System.out.println("\nSales Report for: " + reportDate.format(DateTimeFormatter.ISO_DATE));
+									double totalDailyRevenue) {
+		if (reportDate != null) {
+			System.out.println("\nSales Report for: " + reportDate.format(DateTimeFormatter.ISO_DATE));
+		} else {
+			System.out.println("\nSales Report for: ALL TRANSACTIONS");
+		}
 		System.out.println(lineSeperatorHead);
-		
 
 		for (BillReportDTO billDTO : billReportDTOs) {
 			System.out.printf(
@@ -111,8 +139,13 @@ public class ReportService {
 			}
 			System.out.println("-----------------------------------------------------------------------------------");
 		}
-		System.out.printf("Total revenue for %s: %.2f%n", reportDate.format(DateTimeFormatter.ISO_DATE),
-				totalDailyRevenue);
+
+		if (reportDate != null) {
+			System.out.printf("Total revenue for %s: %.2f%n", reportDate.format(DateTimeFormatter.ISO_DATE),
+					totalDailyRevenue);
+		} else {
+			System.out.printf("Total revenue for all transactions: %.2f%n", totalDailyRevenue);
+		}
 		System.out.println(lineSeperatorHead);
 	}
 }

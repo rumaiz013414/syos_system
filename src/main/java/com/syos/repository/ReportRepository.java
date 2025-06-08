@@ -99,4 +99,29 @@ public class ReportRepository {
 		}
 		return items;
 	}
+
+	public List<Bill> getAllBills() {
+		String sql = """
+					SELECT id, serial_number, bill_date, total_amount, cash_tendered, change_returned, transaction_type
+					FROM bill
+					ORDER BY bill_date DESC
+				""";
+		List<Bill> bills = new ArrayList<>();
+		try (Connection connection = DatabaseManager.getInstance().getConnection();
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				ResultSet resultSet = preparedStatement.executeQuery()) {
+
+			while (resultSet.next()) {
+				Bill bill = new Bill(resultSet.getInt("id"), resultSet.getInt("serial_number"),
+						resultSet.getTimestamp("bill_date"), resultSet.getDouble("total_amount"),
+						resultSet.getDouble("cash_tendered"), resultSet.getDouble("change_returned"),
+						resultSet.getString("transaction_type"));
+				bills.add(bill);
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException("Error fetching all bills.", e);
+		}
+		return bills;
+	}
+
 }
