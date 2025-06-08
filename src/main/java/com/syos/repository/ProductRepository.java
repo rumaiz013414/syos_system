@@ -65,6 +65,22 @@ public class ProductRepository {
 		}
 	}
 
+	public void update(Product product) {
+		String sql = "UPDATE product SET name = ?, price = ? WHERE code = ?";
+		try (Connection conn = DatabaseManager.getInstance().getConnection();
+				PreparedStatement ps = conn.prepareStatement(sql)) {
+			ps.setString(1, product.getName());
+			ps.setDouble(2, product.getPrice()); 
+			ps.setString(3, product.getCode());
+			int affectedRows = ps.executeUpdate();
+			if (affectedRows == 0) {
+				throw new RuntimeException("Product with code " + product.getCode() + " not found for update.");
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException("Error updating product", e);
+		}
+	}
+
 	public void clear() {
 		// TODO Auto-generated method stub
 

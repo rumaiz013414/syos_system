@@ -25,4 +25,23 @@ public class ProductService {
 
 		return poduct;
 	}
+	 public Product updateProductName(String code, String newName) {
+	        if (newName.length() > CommonVariables.MAX_PRODUCT_NAME_LENGTH) {
+	            throw new IllegalArgumentException("Product name must be at most 100 characters");
+	        }
+
+	        Product existingProduct = productRepository.findByCode(code);
+	        if (existingProduct == null) {
+	            throw new IllegalArgumentException("Product with code " + code + " not found.");
+	        }
+
+	        // Update only the name
+	        existingProduct.setName(newName);
+	        productRepository.update(existingProduct); // The update method in repository should handle only name change now
+	        return existingProduct;
+	    }
+
+	    public Product findProductByCode(String code) {
+	        return productRepository.findByCode(code);
+	    }
 }
