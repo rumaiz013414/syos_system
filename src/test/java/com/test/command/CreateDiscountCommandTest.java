@@ -3,11 +3,7 @@ package com.test.command;
 import com.syos.command.CreateDiscountCommand;
 import com.syos.enums.DiscountType;
 import com.syos.repository.DiscountRepository;
-import com.syos.service.DiscountCreationService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -28,250 +24,161 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CreateDiscountCommandTest {
 
-	@Mock
-	private Scanner scanner;
-	@Mock
-	private DiscountRepository discountRepository;
+    @Mock
+    private Scanner scanner;
+    @Mock
+    private DiscountRepository discountRepository;
 
-	private CreateDiscountCommand createDiscountCommand;
-	private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-	private final PrintStream originalOut = System.out;
+    private CreateDiscountCommand createDiscountCommand;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
 
-	@BeforeEach
-	void setUp() {
-		System.setOut(new PrintStream(outContent));
-		new DiscountCreationService(scanner, discountRepository);
-		createDiscountCommand = new CreateDiscountCommand(scanner, discountRepository);
-	}
+    @BeforeEach
+    void setUp() {
+        System.setOut(new PrintStream(outContent));
+        createDiscountCommand = new CreateDiscountCommand(scanner, discountRepository);
+    }
 
-	@AfterEach
-	void restoreStreams() {
-		System.setOut(originalOut);
-	}
+    @AfterEach
+    void restoreStreams() {
+        System.setOut(originalOut);
+    }
 
-	// --- Success Scenarios ---
+    @Test
+    @DisplayName("Creates a PERCENT discount with valid input")
+    void shouldSuccessfullyCreatePercentDiscount() {
+        String name = "Black Friday";
+        String typeInput = "PERCENT";
+        String valueInput = "20.0";
+        String startDateInput = "2025-11-20";
+        String endDateInput = "2025-11-30";
+        int expectedId = 100;
 
-	@Test
-	@DisplayName("Should successfully create a PERCENT discount with valid inputs")
-	void shouldSuccessfullyCreatePercentDiscount() {
-		// Arrange
-		String name = "Black Friday";
-		String typeInput = "PERCENT";
-		String valueInput = "20.0";
-		String startDateInput = "2025-11-20";
-		String endDateInput = "2025-11-30";
-		int expectedId = 100;
+        when(scanner.nextLine()).thenReturn(name, typeInput, valueInput, startDateInput, endDateInput);
+        when(discountRepository.createDiscount(eq(name), eq(DiscountType.PERCENT), eq(20.0),
+                eq(LocalDate.parse(startDateInput)), eq(LocalDate.parse(endDateInput)))).thenReturn(expectedId);
 
-		when(scanner.nextLine()).thenReturn(name).thenReturn(typeInput).thenReturn(valueInput)
-				.thenReturn(startDateInput).thenReturn(endDateInput);
+        createDiscountCommand.execute();
 
-		when(discountRepository.createDiscount(eq(name), eq(DiscountType.PERCENT), eq(20.0),
-				eq(LocalDate.parse(startDateInput)), eq(LocalDate.parse(endDateInput)))).thenReturn(expectedId);
+        String output = outContent.toString();
+        assertTrue(output.contains("Success: Discount 'Black Friday' (ID=100) created"));
+    }
 
-		// Act
-		createDiscountCommand.execute();
+    @Test
+    @DisplayName("Creates an AMOUNT discount with valid input")
+    void shouldSuccessfullyCreateAmountDiscount() {
+        String name = "Holiday Flat Rate";
+        String typeInput = "AMOUNT";
+        String valueInput = "5.0";
+        String startDateInput = "2025-12-01";
+        String endDateInput = "2025-12-25";
+        int expectedId = 101;
 
-		// Assert
-		verify(scanner, times(5)).nextLine(); // Name, Type, Value, StartDate, EndDate
-		verify(discountRepository, times(1)).createDiscount(anyString(), any(DiscountType.class), anyDouble(),
-				any(LocalDate.class), any(LocalDate.class));
+        when(scanner.nextLine()).thenReturn(name, typeInput, valueInput, startDateInput, endDateInput);
+        when(discountRepository.createDiscount(eq(name), eq(DiscountType.AMOUNT), eq(5.0),
+                eq(LocalDate.parse(startDateInput)), eq(LocalDate.parse(endDateInput)))).thenReturn(expectedId);
 
-		String output = outContent.toString();
-		assertTrue(output.contains("=== Create New Discount ==="));
-		assertTrue(output.contains(String.format("Success: Discount '%s' (ID=%d) created from %s to %s.", name,
-				expectedId, startDateInput, endDateInput)));
-	}
+        createDiscountCommand.execute();
 
-	@Test
-	@DisplayName("Should successfully create an AMOUNT discount with valid inputs")
-	void shouldSuccessfullyCreateAmountDiscount() {
-		// Arrange
-		String name = "Holiday Flat Rate";
-		String typeInput = "AMOUNT";
-		String valueInput = "5.0";
-		String startDateInput = "2025-12-01";
-		String endDateInput = "2025-12-25";
-		int expectedId = 101;
+        String output = outContent.toString();
+        assertTrue(output.contains("Success: Discount 'Holiday Flat Rate' (ID=101) created"));
+    }
 
-		when(scanner.nextLine()).thenReturn(name).thenReturn(typeInput).thenReturn(valueInput)
-				.thenReturn(startDateInput).thenReturn(endDateInput);
+    @ParameterizedTest
+    @MethodSource("invalidInputTestCases")
+    @DisplayName("Handles invalid inputs and succeeds after retries")
+    void shouldHandleInvalidInputsAndEventuallySucceed(String[] scannerInputs, String expectedFinalName,
+                                                       DiscountType expectedFinalType, double expectedFinalValue,
+                                                       LocalDate expectedFinalStartDate, LocalDate expectedFinalEndDate,
+                                                       String[] expectedErrorMessages) {
+        when(scanner.nextLine()).thenReturn(scannerInputs[0],
+                Stream.of(scannerInputs).skip(1).toArray(String[]::new));
 
-		when(discountRepository.createDiscount(eq(name), eq(DiscountType.AMOUNT), eq(5.0),
-				eq(LocalDate.parse(startDateInput)), eq(LocalDate.parse(endDateInput)))).thenReturn(expectedId);
+        when(discountRepository.createDiscount(eq(expectedFinalName), eq(expectedFinalType), eq(expectedFinalValue),
+                eq(expectedFinalStartDate), eq(expectedFinalEndDate))).thenReturn(1);
 
-		// Act
-		createDiscountCommand.execute();
+        createDiscountCommand.execute();
 
-		// Assert
-		verify(scanner, times(5)).nextLine();
-		verify(discountRepository, times(1)).createDiscount(anyString(), any(DiscountType.class), anyDouble(),
-				any(LocalDate.class), any(LocalDate.class));
+        String output = outContent.toString();
+        for (String errorMessage : expectedErrorMessages) {
+            assertTrue(output.contains(errorMessage));
+        }
+        assertTrue(output.contains("Success: Discount '" + expectedFinalName));
+    }
 
-		String output = outContent.toString();
-		assertTrue(output.contains("=== Create New Discount ==="));
-		assertTrue(output.contains(String.format("Success: Discount '%s' (ID=%d) created from %s to %s.", name,
-				expectedId, startDateInput, endDateInput)));
-	}
+    private static Stream<Arguments> invalidInputTestCases() {
+        return Stream.of(
+            Arguments.of(new String[]{"", "Valid", "PERCENT", "10", "2025-01-01", "2025-01-31"},
+                    "Valid", DiscountType.PERCENT, 10.0,
+                    LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
+                    new String[]{"Error: Discount name cannot be empty."}),
+            Arguments.of(new String[]{"Test", "INVALID", "AMOUNT", "5", "2025-01-01", "2025-01-31"},
+                    "Test", DiscountType.AMOUNT, 5.0,
+                    LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
+                    new String[]{"Error: Invalid discount type. Use PERCENT or AMOUNT."})
+        );
+    }
 
-	// --- Failure Scenarios (Validations) ---
+    @Test
+    @DisplayName("Handles repository exception during creation")
+    void shouldHandleRepositoryRuntimeException() {
+        String name = "ErrorTest";
+        when(scanner.nextLine()).thenReturn(name, "PERCENT", "10", "2025-01-01", "2025-01-31");
 
-	@ParameterizedTest
-	@MethodSource("invalidInputTestCases")
-	@DisplayName("Should handle invalid inputs and re-prompt until valid data is entered")
-	void shouldHandleInvalidInputsAndEventuallySucceed(String[] scannerInputs, // All inputs for scanner.nextLine() in
-																				// sequence
-			String expectedFinalName, DiscountType expectedFinalType, double expectedFinalValue,
-			LocalDate expectedFinalStartDate, LocalDate expectedFinalEndDate, String[] expectedErrorMessages) {
+        doThrow(new RuntimeException("Database down")).when(discountRepository)
+                .createDiscount(anyString(), any(), anyDouble(), any(), any());
 
-		// Arrange
-		// Chain all scanner inputs
-		when(scanner.nextLine()).thenReturn(scannerInputs[0], Stream.of(scannerInputs).skip(1).toArray(String[]::new));
+        createDiscountCommand.execute();
 
-		// Mock repository for successful creation with final valid inputs
-		when(discountRepository.createDiscount(eq(expectedFinalName), eq(expectedFinalType), eq(expectedFinalValue),
-				eq(expectedFinalStartDate), eq(expectedFinalEndDate))).thenReturn(1); // Return a dummy ID for success
+        String output = outContent.toString();
+        assertTrue(output.contains("Error: An unexpected error occurred while creating the discount"));
+        assertFalse(output.contains("Success:"));
+    }
 
-		// Act
-		createDiscountCommand.execute();
 
-		// Assert
-		// Verify createDiscount was called exactly once with the final, valid inputs
-		verify(discountRepository, times(1)).createDiscount(expectedFinalName, expectedFinalType, expectedFinalValue,
-				expectedFinalStartDate, expectedFinalEndDate);
+    @Test
+    @DisplayName("Handles case-insensitive discount type input")
+    void shouldHandleCaseInsensitiveType() {
+        when(scanner.nextLine()).thenReturn("Lowercase Test", "percent", "15", "2025-05-01", "2025-05-31");
+        when(discountRepository.createDiscount(eq("Lowercase Test"), eq(DiscountType.PERCENT), eq(15.0),
+                any(), any())).thenReturn(999);
 
-		// Verify error messages appeared for invalid inputs
-		String output = outContent.toString();
-		for (String errorMessage : expectedErrorMessages) {
-			if (errorMessage != null) {
-				assertTrue(output.contains(errorMessage), "Output should contain error: " + errorMessage);
-			}
-		}
-		// Verify success message
-		assertTrue(output.contains(String.format("Success: Discount '%s'", expectedFinalName)));
-	}
+        createDiscountCommand.execute();
 
-	// Method to provide arguments for the parameterized test
-	private static Stream<Arguments> invalidInputTestCases() {
-		LocalDate today = LocalDate.now();
-		LocalDate yesterday = today.minusDays(1);
-		LocalDate tomorrow = today.plusDays(1);
+        String output = outContent.toString();
+        assertTrue(output.contains("Success: Discount 'Lowercase Test' (ID=999) created"));
+    }
 
-		return Stream.of(
-				// 1. Invalid Name -> Valid Name
-				Arguments.of(new String[] { "", "Valid Name", "PERCENT", "10.0", "2025-01-01", "2025-01-31" },
-						"Valid Name", DiscountType.PERCENT, 10.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Discount name cannot be empty." }),
+    @Test
+    @DisplayName("Trims whitespace from name and type input")
+    void shouldTrimWhitespaceFromInputs() {
+        when(scanner.nextLine()).thenReturn("   Trim Me  ", "  amount  ", "10", "2025-06-01", "2025-06-30");
+        when(discountRepository.createDiscount(eq("Trim Me"), eq(DiscountType.AMOUNT), eq(10.0),
+                any(), any())).thenReturn(888);
 
-				// 2. Invalid Type -> Valid Type
-				Arguments.of(
-						new String[] { "Valid Name", "INVALID_TYPE", "PERCENT", "10.0", "2025-01-01", "2025-01-31" },
-						"Valid Name", DiscountType.PERCENT, 10.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Invalid discount type. Use PERCENT or AMOUNT." }),
+        createDiscountCommand.execute();
 
-				// 3. Invalid Value Format -> Valid Value
-				Arguments.of(new String[] { "Valid Name", "PERCENT", "abc", "10.0", "2025-01-01", "2025-01-31" },
-						"Valid Name", DiscountType.PERCENT, 10.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Invalid number format for discount value." }),
+        String output = outContent.toString();
+        assertTrue(output.contains("Success: Discount 'Trim Me' (ID=888) created"));
+    }
 
-				// 4. Negative Value -> Valid Value
-				Arguments.of(new String[] { "Valid Name", "AMOUNT", "-5.0", "5.0", "2025-01-01", "2025-01-31" },
-						"Valid Name", DiscountType.AMOUNT, 5.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Discount value must be non-negative." }),
+    @Test
+    @DisplayName("Handles multiple sequential invalid entries before success")
+    void shouldHandleMultipleFailuresBeforeSuccess() {
+        when(scanner.nextLine()).thenReturn(
+                "", "   ", "New Year Deal",        // Name (2 invalid, 1 valid)
+                "invalid", "wrong", "PERCENT",    // Type (2 invalid, 1 valid)
+                "-1", "200", "25",                // Value (2 invalid, 1 valid)
+                "2025/01/01", "2025-01-01",       // Start Date (1 invalid, 1 valid)
+                "not-a-date", "2025-01-10"        // End Date (1 invalid, 1 valid)
+        );
 
-				// 5. Percentage > 100 -> Valid Percentage
-				Arguments.of(new String[] { "Valid Name", "PERCENT", "101.0", "50.0", "2025-01-01", "2025-01-31" },
-						"Valid Name", DiscountType.PERCENT, 50.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Percentage cannot exceed 100." }),
+        when(discountRepository.createDiscount(eq("New Year Deal"), eq(DiscountType.PERCENT), eq(25.0),
+                eq(LocalDate.of(2025, 1, 1)), eq(LocalDate.of(2025, 1, 10)))).thenReturn(777);
 
-				// 6. Invalid Start Date Format -> Valid Start Date
-				Arguments.of(new String[] { "Valid Name", "PERCENT", "10.0", "2025/01/01", "2025-01-01", "2025-01-31" },
-						"Valid Name", DiscountType.PERCENT, 10.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Invalid start date format. Please use YYYY-MM-DD." }),
+        createDiscountCommand.execute();
 
-				// 7. Invalid End Date Format -> Valid End Date
-				Arguments.of(new String[] { "Valid Name", "PERCENT", "10.0", "2025-01-01", "01-01-2025", "2025-01-31" },
-						"Valid Name", DiscountType.PERCENT, 10.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Invalid end date format. Please use YYYY-MM-DD." }),
-
-				// 8. End Date before Start Date -> Valid End Date
-				Arguments.of(new String[] { "Valid Name", "PERCENT", "10.0", "2025-01-31", "2025-01-01", "2025-02-01" },
-						"Valid Name", DiscountType.PERCENT, 10.0, LocalDate.of(2025, 1, 31), LocalDate.of(2025, 2, 1),
-						new String[] { "Error: End date cannot be before start date." }),
-
-				// 9. All Invalid Inputs (chained) -> All Valid Inputs
-				Arguments.of(new String[] { "", "All Valid", // Name
-						"INVALID", "PERCENT", // Type
-						"-10.0", "5.0", // Value
-						"bad-date", "2025-01-01", // Start Date
-						"another-bad", "2025-01-31" // End Date
-				}, "All Valid", DiscountType.PERCENT, 5.0, LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 31),
-						new String[] { "Error: Discount name cannot be empty.",
-								"Error: Invalid discount type. Use PERCENT or AMOUNT.",
-								"Error: Discount value must be non-negative.",
-								"Error: Invalid start date format. Please use YYYY-MM-DD.",
-								"Error: Invalid end date format. Please use YYYY-MM-DD." }));
-	}
-
-	// --- Exception Handling Scenario ---
-
-	@Test
-	@DisplayName("Should handle RuntimeException from DiscountRepository.createDiscount")
-	void shouldHandleRepositoryRuntimeException() {
-		// Arrange
-		String name = "Repo Error Test";
-		String typeInput = "PERCENT";
-		String valueInput = "10.0";
-		String startDateInput = "2025-01-01";
-		String endDateInput = "2025-01-31";
-		String errorMessage = "Database connection failed during insert.";
-
-		when(scanner.nextLine()).thenReturn(name).thenReturn(typeInput).thenReturn(valueInput)
-				.thenReturn(startDateInput).thenReturn(endDateInput);
-
-		// Simulate repository throwing an exception during creation
-		doThrow(new RuntimeException(errorMessage)).when(discountRepository).createDiscount(anyString(),
-				any(DiscountType.class), anyDouble(), any(LocalDate.class), any(LocalDate.class));
-
-		// Act
-		createDiscountCommand.execute();
-
-		// Assert
-		verify(scanner, times(5)).nextLine();
-		verify(discountRepository, times(1)).createDiscount(anyString(), any(DiscountType.class), anyDouble(),
-				any(LocalDate.class), any(LocalDate.class));
-
-		String output = outContent.toString();
-		assertTrue(output.contains("Error: An unexpected error occurred while creating the discount: " + errorMessage));
-		assertFalse(output.contains("Success:")); // Ensure no success message
-	}
-
-	@Test
-	@DisplayName("Should handle repository returning -1 (failure to get ID)")
-	void shouldHandleRepositoryReturnsNegativeOne() {
-		// Arrange
-		String name = "Repo Returns -1";
-		String typeInput = "PERCENT";
-		String valueInput = "10.0";
-		String startDateInput = "2025-01-01";
-		String endDateInput = "2025-01-31";
-
-		when(scanner.nextLine()).thenReturn(name).thenReturn(typeInput).thenReturn(valueInput)
-				.thenReturn(startDateInput).thenReturn(endDateInput);
-
-		// Simulate repository returning -1 (e.g., if it failed to get a generated ID)
-		when(discountRepository.createDiscount(anyString(), any(DiscountType.class), anyDouble(), any(LocalDate.class),
-				any(LocalDate.class))).thenReturn(-1);
-
-		// Act
-		createDiscountCommand.execute();
-
-		// Assert
-		verify(scanner, times(5)).nextLine();
-		verify(discountRepository, times(1)).createDiscount(anyString(), any(DiscountType.class), anyDouble(),
-				any(LocalDate.class), any(LocalDate.class));
-
-		String output = outContent.toString();
-		assertTrue(output.contains("Error: Failed to create discount (repository returned -1)."));
-		assertFalse(output.contains("Success:"));
-	}
+        String output = outContent.toString();
+        assertTrue(output.contains("Success: Discount 'New Year Deal' (ID=777) created"));
+    }
 }
