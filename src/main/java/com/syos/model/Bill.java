@@ -83,7 +83,7 @@ public class Bill {
 		private final List<BillItem> items;
 		private double totalAmount = 0;
 		private double cashTendered = 0;
-		private String transactionType = "COUNTER";
+		private String transactionType = CommonVariables.transactionType;
 
 		public BillBuilder(int serialNumber, List<BillItem> items) {
 			if (items == null || items.isEmpty()) {

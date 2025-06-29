@@ -19,4 +19,6 @@ public class CommonVariables {
 	public static double oneHundredPercent = 1.0;
 	public static int discountExpiryWeeks = 1;
 	public static double totalRevenue = 0.0;
+	public static String transactionType = "COUNTER";
+
 }
