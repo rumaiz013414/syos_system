@@ -11,12 +11,13 @@ public class ViewStockCommand implements Command {
 	private final InventoryManager inventoryManager;
 	private final Scanner scanner;
 
+	private static final String LINE_SEPARATOR = "-----------------------------------------------------------------------------------------------------------------";
+	private static final String TABLE_ROW_FORMAT = "%-15s %-15s %-15s %-15s %-15s %-15s%n";
+
 	public ViewStockCommand(InventoryManager inventoryManager, Scanner scanner) {
 		this.inventoryManager = inventoryManager;
 		this.scanner = scanner;
 	}
-
-	String lineSeperator = "-----------------------------------------------------------------------------------------------------------------";
 
 	@Override
 	public void execute() {
@@ -24,13 +25,13 @@ public class ViewStockCommand implements Command {
 		String productCode = scanner.nextLine().trim();
 
 		if (productCode.isEmpty()) {
-			displayAllStockDetailsInTable();
+			displayAllStockDetails();
 		} else {
-			displayStockDetailsInTable(productCode);
+			displaySpecificStockDetails(productCode);
 		}
 	}
 
-	private void displayAllStockDetailsInTable() {
+	private void displayAllStockDetails() {
 		try {
 			List<String> allProductCodes = inventoryManager.getAllProductCodes();
 
@@ -47,17 +48,17 @@ public class ViewStockCommand implements Command {
 		}
 	}
 
-	private void displayStockDetailsInTable(String productCode) {
+	private void displaySpecificStockDetails(String productCode) {
 		List<String> singleProductList = List.of(productCode);
 		System.out.printf("\n--- Current Stock Details for Product: %s ---%n", productCode);
 		printStockTable(singleProductList);
 	}
 
 	private void printStockTable(List<String> productCodes) {
-		System.out.println(lineSeperator);
-		System.out.printf("%-15s %-15s %-15s %-15s %-15s %-15s%n", "Product Code", "Shelf Qty", "Batch ID",
-				"Purch. Date", "Exp. Date", "Batch Rem. Qty");
-		System.out.println(lineSeperator);
+		System.out.println(LINE_SEPARATOR);
+		System.out.printf(TABLE_ROW_FORMAT, "Product Code", "Shelf Qty", "Batch ID", "Purch. Date", "Exp. Date",
+				"Batch Rem. Qty");
+		System.out.println(LINE_SEPARATOR);
 
 		boolean anyProductFoundWithStock = false;
 
@@ -68,35 +69,33 @@ public class ViewStockCommand implements Command {
 
 				if (batches.isEmpty() && quantityOnShelf == CommonVariables.MINIMUMQUANTITY) {
 					if (productCodes.size() == CommonVariables.PRODUCTQUANTITY) {
-						System.out.printf("%-15s %-15d %-15s %-15s %-15s %-15s%n", productCode, 0, "N/A", "N/A", "N/A",
-								"N/A");
+
+						System.out.printf(TABLE_ROW_FORMAT, productCode, 0, "N/A", "N/A", "N/A", "N/A");
 						anyProductFoundWithStock = true;
 					}
-				}
-
-				anyProductFoundWithStock = true;
-
-				if (batches.isEmpty()) {
-					System.out.printf("%-15s %-15d %-15s %-15s %-15s %-15s%n", productCode, quantityOnShelf, "N/A",
-							"N/A", "N/A", "N/A");
 				} else {
-					StockBatch firstBatch = batches.get(0);
-					System.out.printf("%-15s %-15d %-15d %-15s %-15s %-15d%n", productCode, quantityOnShelf,
-							firstBatch.getId(), firstBatch.getPurchaseDate(), firstBatch.getExpiryDate(),
-							firstBatch.getQuantityRemaining());
+					anyProductFoundWithStock = true;
+					if (batches.isEmpty()) {
+						System.out.printf(TABLE_ROW_FORMAT, productCode, quantityOnShelf, "N/A", "N/A", "N/A", "N/A");
+					} else {
+						StockBatch firstBatch = batches.get(0);
+						System.out.printf(TABLE_ROW_FORMAT, productCode, quantityOnShelf, firstBatch.getId(),
+								firstBatch.getPurchaseDate(), firstBatch.getExpiryDate(),
+								firstBatch.getQuantityRemaining());
 
-					for (int i = 1; i < batches.size(); i++) {
-						StockBatch batch = batches.get(i);
-						System.out.printf("%-15s %-15s %-15d %-15s %-15s %-15d%n", "", "", batch.getId(),
-								batch.getPurchaseDate(), batch.getExpiryDate(), batch.getQuantityRemaining());
+						for (int i = 1; i < batches.size(); i++) {
+							StockBatch batch = batches.get(i);
+							System.out.printf(TABLE_ROW_FORMAT, "", "", batch.getId(), batch.getPurchaseDate(),
+									batch.getExpiryDate(), batch.getQuantityRemaining());
+						}
 					}
 				}
 			} catch (IllegalArgumentException e) {
 				if (productCodes.size() == 1) {
 					System.out.printf("Error: Product code '%s' not found or issue retrieving details: %s%n",
 							productCode, e.getMessage());
-				} else {
 				}
+
 			} catch (Exception e) {
 				System.out.printf("An unexpected error occurred for product %s: %s%n", productCode, e.getMessage());
 			}
@@ -105,7 +104,7 @@ public class ViewStockCommand implements Command {
 		if (!anyProductFoundWithStock && !productCodes.isEmpty()) {
 			System.out.println("No stock data found for the selected products.");
 		}
-		System.out.println(lineSeperator);
+		System.out.println(LINE_SEPARATOR);
 		System.out.println(
 				"Note: 'Shelf Qty' is the total quantity on the shelf. 'Batch Rem. Qty' is stock remaining in back-store batches.");
 	}

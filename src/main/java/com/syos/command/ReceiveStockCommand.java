@@ -20,60 +20,24 @@ public class ReceiveStockCommand implements Command {
 	public void execute() {
 		System.out.println("\n=== Receive New Stock ===");
 
-		String productCode;
-		while (true) {
-			System.out.print("Product code: ");
-			productCode = scanner.nextLine().trim();
-			if (productCode.isEmpty()) {
-				System.out.println("Error: Product code cannot be empty.");
-			} else {
-				break;
-			}
+		String productCode = getProductCodeInput();
+		if (productCode == null) {
+			return;
 		}
 
-		int quantity;
-		while (true) {
-			System.out.print("Quantity: ");
-			String quantityInput = scanner.nextLine().trim();
-			try {
-				quantity = Integer.parseInt(quantityInput);
-				if (quantity <= CommonVariables.MINIMUMQUANTITY) {
-					System.out.println("Error: Quantity must be positive.");
-				} else {
-					break;
-				}
-			} catch (NumberFormatException e) {
-				System.out.println("Error: Invalid quantity. Please enter a positive integer.");
-			}
+		int quantity = getQuantityInput();
+		if (quantity == -1) {
+			return;
 		}
 
-		LocalDate purchaseDate;
-		while (true) {
-			System.out.print("Purchase date (YYYY-MM-DD): ");
-			String purchaseDateInput = scanner.nextLine().trim();
-			try {
-				purchaseDate = LocalDate.parse(purchaseDateInput);
-				break;
-			} catch (DateTimeParseException e) {
-				System.out.println("Error: Invalid purchase date format. Please use YYYY-MM-DD.");
-			}
+		LocalDate purchaseDate = getDateInput("Purchase date (YYYY-MM-DD): ");
+		if (purchaseDate == null) {
+			return;
 		}
 
-		LocalDate expiryDate;
-		while (true) {
-			System.out.print("Expiry date (YYYY-MM-DD): ");
-			String expiryDateInput = scanner.nextLine().trim();
-			try {
-				expiryDate = LocalDate.parse(expiryDateInput);
-
-				if (expiryDate.isBefore(purchaseDate)) {
-					System.out.println("Error: Expiry date cannot be before purchase date.");
-				} else {
-					break;
-				}
-			} catch (DateTimeParseException e) {
-				System.out.println("Error: Invalid expiry date format. Please use YYYY-MM-DD.");
-			}
+		LocalDate expiryDate = getExpiryDateInput(purchaseDate);
+		if (expiryDate == null) {
+			return;
 		}
 
 		try {
@@ -83,6 +47,66 @@ public class ReceiveStockCommand implements Command {
 		} catch (RuntimeException e) {
 			System.out.println("An unexpected error occurred: " + e.getMessage());
 			e.printStackTrace();
+		}
+	}
+
+	private String getProductCodeInput() {
+		String productCode;
+		while (true) {
+			System.out.print("Product code: ");
+			productCode = scanner.nextLine().trim();
+			if (productCode.isEmpty()) {
+				System.out.println("Error: Product code cannot be empty.");
+			} else {
+				return productCode;
+			}
+		}
+	}
+
+	private int getQuantityInput() {
+		int quantity;
+		while (true) {
+			System.out.print("Quantity: ");
+			String quantityInput = scanner.nextLine().trim();
+			try {
+				quantity = Integer.parseInt(quantityInput);
+				if (quantity <= CommonVariables.MINIMUMQUANTITY) {
+					System.out.println("Error: Quantity must be positive.");
+				} else {
+					return quantity;
+				}
+			} catch (NumberFormatException e) {
+				System.out.println("Error: Invalid quantity. Please enter a positive integer.");
+			}
+		}
+	}
+
+	private LocalDate getDateInput(String prompt) {
+		LocalDate date;
+		while (true) {
+			System.out.print(prompt);
+			String dateInput = scanner.nextLine().trim();
+			try {
+				date = LocalDate.parse(dateInput);
+				return date;
+			} catch (DateTimeParseException e) {
+				System.out.println("Error: Invalid date format. Please use YYYY-MM-DD.");
+			}
+		}
+	}
+
+	private LocalDate getExpiryDateInput(LocalDate purchaseDate) {
+		LocalDate expiryDate;
+		while (true) {
+			expiryDate = getDateInput("Expiry date (YYYY-MM-DD): ");
+			if (expiryDate == null) {
+				return null;
+			}
+			if (expiryDate.isBefore(purchaseDate)) {
+				System.out.println("Error: Expiry date cannot be before purchase date.");
+			} else {
+				return expiryDate;
+			}
 		}
 	}
 }

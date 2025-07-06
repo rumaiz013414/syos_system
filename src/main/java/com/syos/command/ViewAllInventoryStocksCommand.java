@@ -24,20 +24,32 @@ public class ViewAllInventoryStocksCommand implements Command {
 			return;
 		}
 
+		displayAllProductBatches(allProductCodes);
+		System.out.println("------------------------------------");
+	}
+
+	private void displayAllProductBatches(List<String> allProductCodes) {
 		for (String productCode : allProductCodes) {
 			List<StockBatch> batches = inventoryManager.getBatchesForProduct(productCode);
 
 			if (!batches.isEmpty()) {
 				System.out.println(newLine + "Product Code: " + productCode);
-				System.out.printf("%-5s %-15s %-15s %-10s %-10s%n", "ID", "Purchase Date", "Expiry Date", "Quantity",
-						"Remaining");
-				System.out.println("----- --------------- --------------- ---------- ----------");
-				for (StockBatch batch : batches) {
-					System.out.printf("%-5d %-15s %-15s %-10d %-10d%n", batch.getId(), batch.getPurchaseDate(),
-							batch.getExpiryDate(), batch.getQuantityRemaining(), batch.getQuantityRemaining());
-				}
+				printBatchHeader();
+				printBatchDetails(batches);
 			}
 		}
-		System.out.println("------------------------------------");
+	}
+
+	private void printBatchHeader() {
+		System.out.printf("%-5s %-15s %-15s %-10s %-10s%n", "ID", "Purchase Date", "Expiry Date", "Quantity",
+				"Remaining");
+		System.out.println("----- --------------- --------------- ---------- ----------");
+	}
+
+	private void printBatchDetails(List<StockBatch> batches) {
+		for (StockBatch batch : batches) {
+			System.out.printf("%-5d %-15s %-15s %-10d %-10d%n", batch.getId(), batch.getPurchaseDate(),
+					batch.getExpiryDate(), batch.getQuantityRemaining(), batch.getQuantityRemaining());
+		}
 	}
 }

@@ -18,7 +18,29 @@ public class MoveToShelfCommand implements Command {
 	public void execute() {
 		System.out.println("\n=== Move Stock to Shelf ===");
 
-		// product code input and validation
+		String productCode = getProductCodeInput();
+		if (productCode == null) {
+			return;
+		}
+
+		int quantity = getQuantityInput();
+		if (quantity == -1) {
+			return;
+		}
+
+		try {
+			inventoryManager.moveToShelf(productCode, quantity);
+		} catch (IllegalArgumentException e) {
+			System.out.println("Failed to move to shelf: " + e.getMessage());
+		} catch (IllegalStateException e) {
+			System.out.println("Operation failed: " + e.getMessage());
+		} catch (RuntimeException e) {
+			System.out.println("An unexpected error occurred: " + e.getMessage());
+			// e.printStackTrace();
+		}
+	}
+
+	private String getProductCodeInput() {
 		String code;
 		while (true) {
 			System.out.print("Product code: ");
@@ -26,11 +48,12 @@ public class MoveToShelfCommand implements Command {
 			if (code.isEmpty()) {
 				System.out.println("Error: Product code cannot be empty.");
 			} else {
-				break;
+				return code;
 			}
 		}
+	}
 
-		// quantity input and validation
+	private int getQuantityInput() {
 		int quantity;
 		while (true) {
 			System.out.print("Quantity: ");
@@ -40,22 +63,11 @@ public class MoveToShelfCommand implements Command {
 				if (quantity <= CommonVariables.MINIMUMQUANTITY) {
 					System.out.println("Error: Quantity must be positive.");
 				} else {
-					break;
+					return quantity;
 				}
 			} catch (NumberFormatException e) {
 				System.out.println("Error: Invalid quantity. Please enter a positive integer.");
 			}
-		}
-
-		try {
-			inventoryManager.moveToShelf(code, quantity);
-		} catch (IllegalArgumentException e) {
-			System.out.println("Failed to move to shelf: " + e.getMessage());
-		} catch (IllegalStateException e) {
-			System.out.println("Operation failed: " + e.getMessage());
-		} catch (RuntimeException e) {
-			System.out.println("An unexpected error occurred: " + e.getMessage());
-//			e.printStackTrace();
 		}
 	}
 }

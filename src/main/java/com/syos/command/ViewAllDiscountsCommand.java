@@ -10,11 +10,11 @@ import java.util.Scanner;
 public class ViewAllDiscountsCommand implements Command {
 	private final DiscountRepository discountRepository;
 
+	private static final String LINE_SEPARATOR = "-----------------------------------------------------------------------------------------";
+
 	public ViewAllDiscountsCommand(DiscountRepository discountRepository, Scanner scanner) {
 		this.discountRepository = discountRepository;
 	}
-
-	String lineSeperator = "-----------------------------------------------------------------------------------------";
 
 	@Override
 	public void execute() {
@@ -26,9 +26,13 @@ public class ViewAllDiscountsCommand implements Command {
 			return;
 		}
 
+		printDiscountTable(discounts);
+	}
+
+	private void printDiscountTable(List<Discount> discounts) {
 		System.out.printf("%-5s %-20s %-15s %-15s %-15s %-15s%n", "ID", "Name", "Type", "Value", "Start Date",
 				"End Date");
-		System.out.println(lineSeperator);
+		System.out.println(LINE_SEPARATOR);
 
 		for (Discount discount : discounts) {
 			String typeDisplay = (discount.getType() == DiscountType.PERCENT) ? "Percentage" : "Fixed Amount";
@@ -39,6 +43,6 @@ public class ViewAllDiscountsCommand implements Command {
 			System.out.printf("%-5d %-20s %-15s %-15s %-15s %-15s%n", discount.getId(), discount.getName(), typeDisplay,
 					valueDisplay, discount.getStart().toString(), discount.getEnd().toString());
 		}
-		System.out.println(lineSeperator);
+		System.out.println(LINE_SEPARATOR);
 	}
 }
