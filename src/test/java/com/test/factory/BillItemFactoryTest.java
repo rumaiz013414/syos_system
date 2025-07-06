@@ -36,7 +36,6 @@ class BillItemFactoryTest {
 		double productUnitPrice = 10.0;
 		int quantity = 5;
 		double calculatedTotalPrice = 50.0;
-		double originalPrice = productUnitPrice * quantity;
 		double expectedDiscount = 0.0;
 
 		when(mockProduct.getPrice()).thenReturn(productUnitPrice);
