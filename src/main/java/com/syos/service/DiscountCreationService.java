@@ -1,7 +1,7 @@
 package com.syos.service;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException; // More specific exception for date parsing
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 import com.syos.enums.DiscountType;
@@ -19,6 +19,31 @@ public class DiscountCreationService {
 
 	public int createDiscount() {
 		System.out.println("\n=== Create New Discount ===");
+
+		String discountName = getDiscountNameInput();
+		if (discountName == null)
+			return -1;
+
+		DiscountType discountType = getDiscountTypeInput();
+		if (discountType == null)
+			return -1;
+
+		double discountValue = getDiscountValueInput(discountType);
+		if (discountValue == -1.0)
+			return -1;
+
+		LocalDate startDate = getDateInput("Start date (YYYY-MM-DD): ");
+		if (startDate == null)
+			return -1;
+
+		LocalDate endDate = getEndDateInput(startDate);
+		if (endDate == null)
+			return -1;
+
+		return performDiscountCreation(discountName, discountType, discountValue, startDate, endDate);
+	}
+
+	private String getDiscountNameInput() {
 		String discountName;
 		while (true) {
 			System.out.print("Enter discount name (e.g. \"10% OFF SUMMER\"): ");
@@ -26,22 +51,26 @@ public class DiscountCreationService {
 			if (discountName.isEmpty()) {
 				System.out.println("Error: Discount name cannot be empty.");
 			} else {
-				break;
+				return discountName;
 			}
 		}
+	}
 
+	private DiscountType getDiscountTypeInput() {
 		DiscountType discountType;
 		while (true) {
 			System.out.print("Discount type (PERCENT or AMOUNT): ");
 			String typeInput = scanner.nextLine().trim().toUpperCase();
 			try {
 				discountType = DiscountType.valueOf(typeInput);
-				break;
+				return discountType;
 			} catch (IllegalArgumentException e) {
 				System.out.println("Error: Invalid discount type. Use PERCENT or AMOUNT.");
 			}
 		}
+	}
 
+	private double getDiscountValueInput(DiscountType discountType) {
 		double discountValue;
 		while (true) {
 			System.out.print("Discount value ("
@@ -52,45 +81,49 @@ public class DiscountCreationService {
 				discountValue = Double.parseDouble(valueInput);
 				if (discountValue < CommonVariables.MINIMUMAMOUNT) {
 					System.out.println("Error: Discount value must be non-negative.");
-				} else if (discountType == DiscountType.PERCENT
-						&& discountValue > CommonVariables.MAX_PRODUCT_NAME_LENGTH) {
+				} else if (discountType == DiscountType.PERCENT && discountValue > CommonVariables.oneHundredPercent) {
+
 					System.out.println("Error: Percentage cannot exceed 100.");
 				} else {
-					break;
+					return discountValue;
 				}
 			} catch (NumberFormatException e) {
 				System.out.println("Error: Invalid number format for discount value.");
 			}
 		}
+	}
 
-		LocalDate startDate;
+	private LocalDate getDateInput(String prompt) {
+		LocalDate date;
 		while (true) {
-			System.out.print("Start date (YYYY-MM-DD): ");
-			String startDateInput = scanner.nextLine().trim();
+			System.out.print(prompt);
+			String dateInput = scanner.nextLine().trim();
 			try {
-				startDate = LocalDate.parse(startDateInput);
-				break;
+				date = LocalDate.parse(dateInput);
+				return date;
 			} catch (DateTimeParseException e) {
-				System.out.println("Error: Invalid start date format. Please use YYYY-MM-DD.");
+				System.out.println("Error: Invalid date format. Please use YYYY-MM-DD.");
 			}
 		}
+	}
 
+	private LocalDate getEndDateInput(LocalDate startDate) {
 		LocalDate endDate;
 		while (true) {
-			System.out.print("End date (YYYY-MM-DD): ");
-			String endDateInput = scanner.nextLine().trim();
-			try {
-				endDate = LocalDate.parse(endDateInput);
-				if (endDate.isBefore(startDate)) {
-					System.out.println("Error: End date cannot be before start date.");
-				} else {
-					break;
-				}
-			} catch (DateTimeParseException e) {
-				System.out.println("Error: Invalid end date format. Please use YYYY-MM-DD.");
+			endDate = getDateInput("End date (YYYY-MM-DD): ");
+			if (endDate == null) {
+				return null;
+			}
+			if (endDate.isBefore(startDate)) {
+				System.out.println("Error: End date cannot be before start date.");
+			} else {
+				return endDate;
 			}
 		}
+	}
 
+	private int performDiscountCreation(String discountName, DiscountType discountType, double discountValue,
+			LocalDate startDate, LocalDate endDate) {
 		try {
 			CommonVariables.discountId = discountRepository.createDiscount(discountName, discountType, discountValue,
 					startDate, endDate);

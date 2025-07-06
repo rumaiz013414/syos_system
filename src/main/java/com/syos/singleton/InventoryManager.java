@@ -12,6 +12,7 @@ import com.syos.repository.ShelfStockRepository;
 import com.syos.repository.StockBatchRepository;
 import com.syos.repository.ProductRepository;
 import com.syos.strategy.ShelfStrategy;
+import com.syos.util.CommonVariables;
 
 public class InventoryManager {
 	private static InventoryManager instance;
@@ -21,6 +22,7 @@ public class InventoryManager {
 	private final ShelfStrategy strategy;
 	private final List<StockObserver> observers = new ArrayList<>();
 
+	// constructor to enforce Singleton pattern
 	public InventoryManager(ShelfStrategy strategy, StockBatchRepository batchRepository,
 			ShelfStockRepository shelfRepository, ProductRepository productRepository) {
 		this.strategy = strategy;
@@ -52,10 +54,17 @@ public class InventoryManager {
 	}
 
 	public void receiveStock(String productCode, LocalDate purchaseDate, LocalDate expiryDate, int quantity) {
+		validateReceiveStockInputs(productCode, purchaseDate, expiryDate, quantity);
+		batchRepository.createBatch(productCode, purchaseDate, expiryDate, quantity);
+		System.out.printf("Received batch: %s qty=%d exp=%s%n", productCode, quantity, expiryDate);
+	}
+
+	private void validateReceiveStockInputs(String productCode, LocalDate purchaseDate, LocalDate expiryDate,
+			int quantity) {
 		if (productCode == null || productCode.trim().isEmpty()) {
 			throw new IllegalArgumentException("Product code cannot be empty.");
 		}
-		if (quantity <= 0) {
+		if (quantity <= CommonVariables.MINIMUMQUANTITY) {
 			throw new IllegalArgumentException("Quantity must be positive.");
 		}
 		if (purchaseDate == null || expiryDate == null) {
@@ -64,105 +73,124 @@ public class InventoryManager {
 		if (expiryDate.isBefore(purchaseDate)) {
 			throw new IllegalArgumentException("Expiry date cannot be before purchase date.");
 		}
-
-		batchRepository.createBatch(productCode, purchaseDate, expiryDate, quantity);
-		System.out.printf("Received batch: %s qty=%d exp=%s%n", productCode, quantity, expiryDate);
 	}
 
 	public void moveToShelf(String productCode, int qtyToMove) {
+		validateMoveToShelfInputs(productCode, qtyToMove);
+
+		List<StockBatch> backStoreBatches = batchRepository.findByProduct(productCode);
+		validateBackStoreAvailability(productCode, qtyToMove, backStoreBatches);
+
+		int remainingToMove = qtyToMove;
+		while (remainingToMove > CommonVariables.MINIMUMQUANTITY && !backStoreBatches.isEmpty()) {
+			StockBatch chosenBackStoreBatch = strategy.selectBatchFromBackStore(backStoreBatches);
+			if (chosenBackStoreBatch == null) {
+				throw new IllegalStateException(
+						"Shelf strategy returned null batch unexpectedly during move from back-store.");
+			}
+			remainingToMove = processBatchMove(productCode, remainingToMove, chosenBackStoreBatch, backStoreBatches);
+		}
+		System.out.printf("Successfully moved %d units of %s to shelf.%n", qtyToMove, productCode);
+	}
+
+	private void validateMoveToShelfInputs(String productCode, int qtyToMove) {
 		if (productCode == null || productCode.trim().isEmpty()) {
 			throw new IllegalArgumentException("Product code cannot be empty.");
 		}
-		if (qtyToMove <= 0) {
+		if (qtyToMove <= CommonVariables.MINIMUMQUANTITY) {
 			throw new IllegalArgumentException("Quantity to move must be positive.");
 		}
+	}
 
-		int remainingToMove = qtyToMove;
-
-		List<StockBatch> backStoreBatches = batchRepository.findByProduct(productCode);
-
+	private void validateBackStoreAvailability(String productCode, int qtyToMove, List<StockBatch> backStoreBatches) {
 		if (backStoreBatches == null || backStoreBatches.isEmpty()) {
 			throw new IllegalArgumentException("No stock batches found in back-store for product: " + productCode);
 		}
-
 		int totalAvailableInBackStore = backStoreBatches.stream().mapToInt(StockBatch::getQuantityRemaining).sum();
 		if (totalAvailableInBackStore < qtyToMove) {
 			throw new IllegalArgumentException(
 					String.format("Insufficient stock in back-store for %s. Available: %d, Requested: %d.", productCode,
 							totalAvailableInBackStore, qtyToMove));
 		}
+	}
 
-		while (remainingToMove > 0 && !backStoreBatches.isEmpty()) {
-			StockBatch chosenBackStoreBatch = strategy.selectBatchFromBackStore(backStoreBatches);
+	private int processBatchMove(String productCode, int remainingToMove, StockBatch chosenBackStoreBatch,
+			List<StockBatch> backStoreBatches) {
+		int availableInBackStoreBatch = chosenBackStoreBatch.getQuantityRemaining();
+		int usedFromBackStoreBatch = Math.min(availableInBackStoreBatch, remainingToMove);
 
-			if (chosenBackStoreBatch == null) {
-				throw new IllegalStateException(
-						"Shelf strategy returned null batch unexpectedly during move from back-store.");
-			}
+		chosenBackStoreBatch.setQuantityRemaining(availableInBackStoreBatch - usedFromBackStoreBatch);
+		batchRepository.updateQuantity(chosenBackStoreBatch.getId(), chosenBackStoreBatch.getQuantityRemaining());
 
-			int availableInBackStoreBatch = chosenBackStoreBatch.getQuantityRemaining();
-			int usedFromBackStoreBatch = Math.min(availableInBackStoreBatch, remainingToMove);
+		shelfRepository.updateBatchQuantityOnShelf(productCode, chosenBackStoreBatch.getId(), usedFromBackStoreBatch,
+				chosenBackStoreBatch.getExpiryDate());
+		System.out.printf("Moved %d units from back-store batch %d to shelf for %s.%n", usedFromBackStoreBatch,
+				chosenBackStoreBatch.getId(), productCode);
 
-			chosenBackStoreBatch.setQuantityRemaining(availableInBackStoreBatch - usedFromBackStoreBatch);
-			batchRepository.updateQuantity(chosenBackStoreBatch.getId(), chosenBackStoreBatch.getQuantityRemaining());
+		remainingToMove -= usedFromBackStoreBatch;
 
-			shelfRepository.updateBatchQuantityOnShelf(productCode, chosenBackStoreBatch.getId(),
-					usedFromBackStoreBatch, chosenBackStoreBatch.getExpiryDate());
-			System.out.printf("Moved %d units from back-store batch %d to shelf for %s.%n", usedFromBackStoreBatch,
-					chosenBackStoreBatch.getId(), productCode);
-
-			remainingToMove -= usedFromBackStoreBatch;
-
-			if (chosenBackStoreBatch.getQuantityRemaining() == 0) {
-				backStoreBatches.remove(chosenBackStoreBatch);
-			}
+		if (chosenBackStoreBatch.getQuantityRemaining() == CommonVariables.MINIMUMQUANTITY) {
+			backStoreBatches.remove(chosenBackStoreBatch);
 		}
-		System.out.printf("Successfully moved %d units of %s to shelf.%n", qtyToMove, productCode);
+		return remainingToMove;
 	}
 
 	public void deductFromShelf(String productCode, int quantity) {
-		if (productCode == null || productCode.trim().isEmpty()) {
-			throw new IllegalArgumentException("Product code cannot be empty.");
-		}
-		if (quantity <= 0) {
-			throw new IllegalArgumentException("Quantity to deduct must be positive.");
-		}
+		validateDeductFromShelfInputs(productCode, quantity);
+
 		int currentShelfQuantity = shelfRepository.getQuantity(productCode);
 		if (currentShelfQuantity < quantity) {
 			throw new IllegalArgumentException(
 					String.format("Insufficient stock on shelf for %s. Available: %d, Requested: %d.", productCode,
 							currentShelfQuantity, quantity));
 		}
+
 		int remainingToDeduct = quantity;
 		List<ShelfStock> shelfBatches = shelfRepository.getBatchesOnShelf(productCode);
-		while (remainingToDeduct > 0 && !shelfBatches.isEmpty()) {
+
+		while (remainingToDeduct > CommonVariables.MINIMUMQUANTITY && !shelfBatches.isEmpty()) {
 			ShelfStock chosenShelfBatch = strategy.selectBatchFromShelf(shelfBatches);
 			if (chosenShelfBatch == null) {
 				throw new IllegalStateException("Shelf strategy returned null batch unexpectedly during deduction.");
 			}
-			int availableInShelfBatch = chosenShelfBatch.getQuantity();
-			int usedFromShelfBatch = Math.min(availableInShelfBatch, remainingToDeduct);
-			shelfRepository.deductQuantityFromBatchOnShelf(productCode, chosenShelfBatch.getBatchId(),
-					usedFromShelfBatch);
-			System.out.printf("Deducted %d units from shelf batch %d for %s.%n", usedFromShelfBatch,
-					chosenShelfBatch.getBatchId(), productCode);
-
-			chosenShelfBatch.setQuantity(availableInShelfBatch - usedFromShelfBatch);
-
-			remainingToDeduct -= usedFromShelfBatch;
-			if (chosenShelfBatch.getQuantity() == 0) {
-				shelfBatches.remove(chosenShelfBatch);
-				shelfRepository.removeBatchFromShelf(productCode, chosenShelfBatch.getBatchId());
-			}
+			remainingToDeduct = processBatchDeduction(productCode, remainingToDeduct, chosenShelfBatch, shelfBatches);
 		}
 
 		int remain = shelfRepository.getQuantity(productCode);
 		System.out.printf("Total deducted %d units of %s from shelf. Remaining on shelf: %d.%n", quantity, productCode,
 				remain);
 
-		if (remain < 50) {
+		if (remain < CommonVariables.STOCK_ALERT_THRESHOLD) {
 			notifyLow(productCode, remain);
 		}
+	}
+
+	private void validateDeductFromShelfInputs(String productCode, int quantity) {
+		if (productCode == null || productCode.trim().isEmpty()) {
+			throw new IllegalArgumentException("Product code cannot be empty.");
+		}
+		if (quantity <= CommonVariables.MINIMUMQUANTITY) {
+			throw new IllegalArgumentException("Quantity to deduct must be positive.");
+		}
+	}
+
+	private int processBatchDeduction(String productCode, int remainingToDeduct, ShelfStock chosenShelfBatch,
+			List<ShelfStock> shelfBatches) {
+		int availableInShelfBatch = chosenShelfBatch.getQuantity();
+		int usedFromShelfBatch = Math.min(availableInShelfBatch, remainingToDeduct);
+
+		shelfRepository.deductQuantityFromBatchOnShelf(productCode, chosenShelfBatch.getBatchId(), usedFromShelfBatch);
+		System.out.printf("Deducted %d units from shelf batch %d for %s.%n", usedFromShelfBatch,
+				chosenShelfBatch.getBatchId(), productCode);
+
+		chosenShelfBatch.setQuantity(availableInShelfBatch - usedFromShelfBatch);
+
+		remainingToDeduct -= usedFromShelfBatch;
+		if (chosenShelfBatch.getQuantity() == CommonVariables.MINIMUMQUANTITY) {
+			shelfBatches.remove(chosenShelfBatch);
+			shelfRepository.removeBatchFromShelf(productCode, chosenShelfBatch.getBatchId());
+		}
+		return remainingToDeduct;
 	}
 
 	public void removeEntireBatch(int batchId) {
@@ -172,16 +200,21 @@ public class InventoryManager {
 		}
 
 		String productCode = backStoreBatch.getProductCode();
-		int quantityInBackStoreBatch = backStoreBatch.getQuantityRemaining();
+		removeBatchFromShelfIfPresent(productCode, batchId);
+		removeBatchFromBackStore(batchId, productCode, backStoreBatch.getQuantityRemaining());
 
-		List<ShelfStock> batchesOnShelf = shelfRepository.getBatchesOnShelf(productCode);
-		ShelfStock shelfBatchToRemove = null;
-		for (ShelfStock ss : batchesOnShelf) {
-			if (ss.getBatchId() == batchId) {
-				shelfBatchToRemove = ss;
-				break;
-			}
+		System.out.printf("Operation completed for Batch ID %d (%s).%n", batchId, productCode);
+
+		int remainOnShelf = shelfRepository.getQuantity(productCode);
+		if (remainOnShelf < CommonVariables.STOCK_ALERT_THRESHOLD) {
+			notifyLow(productCode, remainOnShelf);
 		}
+	}
+
+	private void removeBatchFromShelfIfPresent(String productCode, int batchId) {
+		List<ShelfStock> batchesOnShelf = shelfRepository.getBatchesOnShelf(productCode);
+		ShelfStock shelfBatchToRemove = batchesOnShelf.stream().filter(ss -> ss.getBatchId() == batchId).findFirst()
+				.orElse(null);
 
 		if (shelfBatchToRemove != null) {
 			int quantityOnShelfForBatch = shelfBatchToRemove.getQuantity();
@@ -192,8 +225,10 @@ public class InventoryManager {
 			System.out.printf("Batch ID %d (%s) was not found on the shelf, only in back-store records.%n", batchId,
 					productCode);
 		}
+	}
 
-		if (quantityInBackStoreBatch > 0) {
+	private void removeBatchFromBackStore(int batchId, String productCode, int quantityInBackStoreBatch) {
+		if (quantityInBackStoreBatch > CommonVariables.MINIMUMQUANTITY) {
 			batchRepository.setBatchQuantityToZero(batchId);
 			System.out.printf("Set remaining quantity of Batch ID %d (%s) to 0 in back-store (was %d).%n", batchId,
 					productCode, quantityInBackStoreBatch);
@@ -201,13 +236,6 @@ public class InventoryManager {
 			System.out.printf(
 					"Batch ID %d (%s) already has 0 quantity in back-store. No change made to back-store record.%n",
 					batchId, productCode);
-		}
-
-		System.out.printf("Operation completed for Batch ID %d (%s).%n", batchId, productCode);
-
-		int remainOnShelf = shelfRepository.getQuantity(productCode);
-		if (remainOnShelf < 50) {
-			notifyLow(productCode, remainOnShelf);
 		}
 	}
 
@@ -259,10 +287,19 @@ public class InventoryManager {
 
 	public void discardBatchQuantity(int batchId, int quantityToDiscard) {
 		StockBatch batch = batchRepository.findById(batchId);
+		validateDiscardBatchQuantityInputs(batch, batchId, quantityToDiscard);
+
+		int newQuantity = batch.getQuantityRemaining() - quantityToDiscard;
+		batchRepository.updateQuantity(batchId, newQuantity);
+		System.out.printf("Discarded %d units from batch ID %d. Remaining quantity: %d.%n", quantityToDiscard, batchId,
+				newQuantity);
+	}
+
+	private void validateDiscardBatchQuantityInputs(StockBatch batch, int batchId, int quantityToDiscard) {
 		if (batch == null) {
 			throw new IllegalArgumentException("Batch with ID " + batchId + " not found.");
 		}
-		if (quantityToDiscard <= 0) {
+		if (quantityToDiscard <= CommonVariables.MINIMUMQUANTITY) {
 			throw new IllegalArgumentException("Quantity to discard must be positive.");
 		}
 		if (batch.getQuantityRemaining() < quantityToDiscard) {
@@ -270,10 +307,5 @@ public class InventoryManager {
 					String.format("Cannot discard %d units from batch %d. Only %d remaining.", quantityToDiscard,
 							batchId, batch.getQuantityRemaining()));
 		}
-
-		int newQuantity = batch.getQuantityRemaining() - quantityToDiscard;
-		batchRepository.updateQuantity(batchId, newQuantity);
-		System.out.printf("Discarded %d units from batch ID %d. Remaining quantity: %d.%n", quantityToDiscard, batchId,
-				newQuantity);
 	}
 }
