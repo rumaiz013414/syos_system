@@ -18,6 +18,7 @@ public class AddProductCommand implements Command {
 		this.productRepository = productRepository;
 	}
 
+
 	@Override
 	public void execute() {
 		System.out.println("\n=== Add New Product ===");
@@ -40,6 +41,7 @@ public class AddProductCommand implements Command {
 		}
 	}
 
+	//product code input
 	private String getProductCodeInput() {
 		String code;
 		while (true) {
@@ -61,6 +63,7 @@ public class AddProductCommand implements Command {
 		}
 	}
 
+	//input product name
 	private String getProductNameInput() {
 		String name;
 		while (true) {
@@ -78,6 +81,7 @@ public class AddProductCommand implements Command {
 		}
 	}
 
+	//product price input
 	private double getProductPriceInput() {
 		double price;
 		while (true) {
