@@ -49,27 +49,22 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should successfully discard a partial quantity from an expiring batch")
 	void shouldSuccessfullyDiscardPartialQuantity() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 101;
 		int quantityToDiscard = 5;
-		// Corrected StockBatch constructor usage: id, productCode, purchaseDate,
-		// expiryDate, quantityRemaining
+
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
 
-		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)) // For daysThreshold input
-				.thenReturn(String.valueOf(batchId)) // For batchId input
-				.thenReturn(String.valueOf(quantityToDiscard)); // For quantityToDiscard input
+		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)).thenReturn(String.valueOf(batchId))
+				.thenReturn(String.valueOf(quantityToDiscard));
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 		doNothing().when(inventoryManager).discardBatchQuantity(batchId, quantityToDiscard);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(3)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verify(inventoryManager, times(1)).discardBatchQuantity(batchId, quantityToDiscard);
@@ -88,25 +83,21 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should successfully discard all remaining quantity from an expiring batch when 0 is entered")
 	void shouldSuccessfullyDiscardAllQuantity() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 102;
 		int remainingQuantity = 30;
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD002", LocalDate.now().minusWeeks(2),
 				LocalDate.now().plusDays(2), remainingQuantity);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
 
 		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)).thenReturn(String.valueOf(batchId))
-				.thenReturn("0"); // User enters 0 to discard all
+				.thenReturn("0");
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
-		doNothing().when(inventoryManager).discardBatchQuantity(batchId, remainingQuantity); // Should discard all 30
+		doNothing().when(inventoryManager).discardBatchQuantity(batchId, remainingQuantity);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(3)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verify(inventoryManager, times(1)).discardBatchQuantity(batchId, remainingQuantity);
@@ -119,16 +110,13 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle invalid expiry threshold input (non-numeric)")
 	void shouldHandleInvalidExpiryThresholdNonNumeric() {
-		// Arrange
 		String invalidThreshold = "abc";
 		when(scanner.nextLine()).thenReturn(invalidThreshold);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(1)).nextLine();
-		verifyNoInteractions(inventoryManager); // No calls to inventoryManager
+		verifyNoInteractions(inventoryManager);
 		String output = outContent.toString();
 		assertTrue(output.contains("Invalid input. Please enter a number for days threshold."));
 	}
@@ -136,14 +124,11 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle invalid expiry threshold input (negative)")
 	void shouldHandleInvalidExpiryThresholdNegative() {
-		// Arrange
 		int negativeThreshold = -5;
 		when(scanner.nextLine()).thenReturn(String.valueOf(negativeThreshold));
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(1)).nextLine();
 		verifyNoInteractions(inventoryManager);
 		String output = outContent.toString();
@@ -153,15 +138,12 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should inform if no expiring batches are found")
 	void shouldInformNoExpiringBatches() {
-		// Arrange
 		int daysThreshold = 10;
 		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold));
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(Collections.emptyList());
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(1)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		String output = outContent.toString();
@@ -172,10 +154,8 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle invalid batch ID input (non-numeric)")
 	void shouldHandleInvalidBatchIdNonNumeric() {
-		// Arrange
 		int daysThreshold = 7;
 		String invalidBatchId = "xyz";
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(101, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
@@ -184,13 +164,11 @@ class DiscardExpiringBatchesCommandTest {
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(2)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
-		verifyNoMoreInteractions(inventoryManager); // No discard call
+		verifyNoMoreInteractions(inventoryManager);
 		String output = outContent.toString();
 		assertTrue(output.contains("Invalid input. Please enter a number for Batch ID."));
 	}
@@ -198,24 +176,20 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should cancel discard operation if batch ID is 0")
 	void shouldCancelDiscardOperation() {
-		// Arrange
 		int daysThreshold = 7;
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(101, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
 
-		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)).thenReturn("0"); // User enters 0 to cancel
+		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)).thenReturn("0");
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(2)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
-		verifyNoMoreInteractions(inventoryManager); // No discard call
+		verifyNoMoreInteractions(inventoryManager);
 		String output = outContent.toString();
 		assertTrue(output.contains("Discard operation cancelled."));
 	}
@@ -223,10 +197,8 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle batch ID not found in the listed expiring batches")
 	void shouldHandleBatchIdNotFoundInList() {
-		// Arrange
 		int daysThreshold = 7;
 		int nonExistentBatchId = 999;
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(101, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
@@ -236,10 +208,8 @@ class DiscardExpiringBatchesCommandTest {
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(2)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verifyNoMoreInteractions(inventoryManager);
@@ -251,11 +221,9 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle invalid quantity to discard (non-numeric)")
 	void shouldHandleInvalidQuantityNonNumeric() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 101;
 		String invalidQuantity = "abc";
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
@@ -265,10 +233,8 @@ class DiscardExpiringBatchesCommandTest {
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(3)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verifyNoMoreInteractions(inventoryManager);
@@ -279,11 +245,9 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle invalid quantity to discard (negative)")
 	void shouldHandleInvalidQuantityNegative() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 101;
 		int negativeQuantity = -5;
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
@@ -293,10 +257,8 @@ class DiscardExpiringBatchesCommandTest {
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(3)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verifyNoMoreInteractions(inventoryManager);
@@ -307,11 +269,9 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle quantity to discard exceeding remaining quantity")
 	void shouldHandleQuantityExceedingRemaining() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 101;
-		int quantityToDiscard = 50; // More than remaining 45
-		// Corrected StockBatch constructor usage
+		int quantityToDiscard = 50;
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
@@ -321,10 +281,8 @@ class DiscardExpiringBatchesCommandTest {
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(3)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verifyNoMoreInteractions(inventoryManager);
@@ -336,12 +294,10 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle IllegalArgumentException from inventoryManager.discardBatchQuantity")
 	void shouldHandleIllegalArgumentException() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 101;
 		int quantityToDiscard = 5;
 		String errorMessage = "Batch or quantity invalid for discard.";
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
@@ -353,10 +309,8 @@ class DiscardExpiringBatchesCommandTest {
 		doThrow(new IllegalArgumentException(errorMessage)).when(inventoryManager).discardBatchQuantity(batchId,
 				quantityToDiscard);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(3)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verify(inventoryManager, times(1)).discardBatchQuantity(batchId, quantityToDiscard);
@@ -367,12 +321,10 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should handle generic Exception from inventoryManager.discardBatchQuantity")
 	void shouldHandleGenericException() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 101;
 		int quantityToDiscard = 5;
 		String errorMessage = "Database connection lost!";
-		// Corrected StockBatch constructor usage
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD001", LocalDate.now().minusMonths(1),
 				LocalDate.now().plusDays(5), 45);
 		List<StockBatch> expiringBatches = Arrays.asList(expiringBatch);
@@ -384,10 +336,8 @@ class DiscardExpiringBatchesCommandTest {
 		doThrow(new RuntimeException(errorMessage)).when(inventoryManager).discardBatchQuantity(batchId,
 				quantityToDiscard);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		verify(scanner, times(3)).nextLine();
 		verify(inventoryManager, times(1)).getAllExpiringBatches(daysThreshold);
 		verify(inventoryManager, times(1)).discardBatchQuantity(batchId, quantityToDiscard);
@@ -395,12 +345,9 @@ class DiscardExpiringBatchesCommandTest {
 		assertTrue(output.contains("An unexpected error occurred: " + errorMessage));
 	}
 
-	// --- NEW TESTS FOR ADDITIONAL COVERAGE ---
-
 	@Test
 	@DisplayName("Should display multiple expiring batches in correct table format and proceed with discard")
 	void shouldDisplayMultipleExpiringBatchesCorrectly() {
-		// Arrange
 		int daysThreshold = 14;
 		StockBatch batch1 = new StockBatch(201, "PROD005", LocalDate.now().minusMonths(3), LocalDate.now().plusDays(10),
 				100);
@@ -409,30 +356,24 @@ class DiscardExpiringBatchesCommandTest {
 		List<StockBatch> expiringBatches = Arrays.asList(batch1, batch2);
 		int quantityToDiscard = 10;
 
-		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)) // Threshold input
-				.thenReturn(String.valueOf(batch1.getId())) // Select batch1
-				.thenReturn(String.valueOf(quantityToDiscard)); // Discard quantity
+		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)).thenReturn(String.valueOf(batch1.getId()))
+				.thenReturn(String.valueOf(quantityToDiscard));
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
-		doNothing().when(inventoryManager).discardBatchQuantity(batch1.getId(), quantityToDiscard); // Mock discard for
-																									// batch1
+		doNothing().when(inventoryManager).discardBatchQuantity(batch1.getId(), quantityToDiscard);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		String output = outContent.toString();
 		assertTrue(output.contains(String.format("--- Batches Expiring in Next %d Days ---", daysThreshold)));
 		assertTrue(output.contains(String.format("%-10s %-15s %-15s %-15s %-15s", "Batch ID", "Product Code",
 				"Expiry Date", "Purch Date", "Remaining Qty")));
-		// Verify both batches are listed
 		assertTrue(output.contains(String.format("%-10d %-15s %-15s %-15s %-15d", batch1.getId(),
 				batch1.getProductCode(), batch1.getExpiryDate().toString(), batch1.getPurchaseDate().toString(),
 				batch1.getQuantityRemaining())));
 		assertTrue(output.contains(String.format("%-10d %-15s %-15s %-15s %-15d", batch2.getId(),
 				batch2.getProductCode(), batch2.getExpiryDate().toString(), batch2.getPurchaseDate().toString(),
 				batch2.getQuantityRemaining())));
-		// Verify the successful discard message for the selected batch
 		assertTrue(output.contains(
 				String.format("Successfully discarded %d units from Batch ID %d.", quantityToDiscard, batch1.getId())));
 		verify(inventoryManager, times(1)).discardBatchQuantity(batch1.getId(), quantityToDiscard);
@@ -441,23 +382,20 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should display batch with zero remaining quantity correctly and prevent positive discard")
 	void shouldHandleBatchWithZeroRemainingQuantity() {
-		// Arrange
 		int daysThreshold = 7;
 		int batchId = 301;
-		int initialQuantity = 0; // Zero remaining
+		int initialQuantity = 0;
 		StockBatch expiringBatch = new StockBatch(batchId, "PROD007", LocalDate.now().minusMonths(6),
 				LocalDate.now().plusDays(1), initialQuantity);
 		List<StockBatch> expiringBatches = Collections.singletonList(expiringBatch);
 
 		when(scanner.nextLine()).thenReturn(String.valueOf(daysThreshold)).thenReturn(String.valueOf(batchId))
-				.thenReturn("1"); // User tries to discard 1 unit (should be prevented)
+				.thenReturn("1");
 
 		when(inventoryManager.getAllExpiringBatches(daysThreshold)).thenReturn(expiringBatches);
 
-		// Act
 		discardExpiringBatchesCommand.execute();
 
-		// Assert
 		String output = outContent.toString();
 		assertTrue(output.contains(String.format("%-10d %-15s %-15s %-15s %-15d", expiringBatch.getId(),
 				expiringBatch.getProductCode(), expiringBatch.getExpiryDate().toString(),
@@ -466,13 +404,12 @@ class DiscardExpiringBatchesCommandTest {
 		assertTrue(output.contains(
 				String.format("Cannot discard %d units. Only %d remaining in batch %d.", 1, initialQuantity, batchId)));
 
-		verify(inventoryManager, never()).discardBatchQuantity(anyInt(), anyInt()); // Ensure no discard happens
+		verify(inventoryManager, never()).discardBatchQuantity(anyInt(), anyInt());
 	}
 
 	@Test
 	@DisplayName("Should allow discarding 0 quantity from batch with 0 remaining (no-op with success)")
 	void shouldAllowZeroDiscardOnZeroRemaining() {
-		// Tests if discarding 0 from an already depleted batch doesn't cause errors
 		int daysThreshold = 5;
 		int batchId = 400;
 		int remainingQuantity = 0;
@@ -497,7 +434,6 @@ class DiscardExpiringBatchesCommandTest {
 	@Test
 	@DisplayName("Should allow discarding all when quantity entered equals remaining")
 	void shouldAllowDiscardEqualToRemaining() {
-		// Tests discarding a quantity exactly equal to what's remaining in the batch
 		int daysThreshold = 3;
 		int batchId = 500;
 		int remaining = 20;

@@ -45,7 +45,6 @@ class ReceiveStockCommandTest {
 	@Test
 	@DisplayName("Should successfully receive new stock with valid inputs")
 	void shouldSuccessfullyReceiveNewStock() {
-		// Arrange
 		String productCode = "PROD001";
 		int quantity = 100;
 		LocalDate purchaseDate = LocalDate.now().minusDays(5);
@@ -56,11 +55,9 @@ class ReceiveStockCommandTest {
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
-		verify(scanner, times(4)).nextLine(); // Code, Qty, PD, ED
+		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
 		String output = outContent.toString();
@@ -69,15 +66,13 @@ class ReceiveStockCommandTest {
 		assertTrue(output.contains("Quantity:"), "Output should contain quantity prompt.");
 		assertTrue(output.contains("Purchase date (YYYY-MM-DD):"), "Output should contain purchase date prompt.");
 		assertTrue(output.contains("Expiry date (YYYY-MM-DD):"), "Output should contain expiry date prompt.");
-		// Success message is handled by InventoryManager, not this command.
 	}
 
 	@Test
 	@DisplayName("Should handle product code with leading/trailing spaces correctly")
 	void shouldHandleProductCodeWithSpaces() {
-		// Arrange
-		String productCodeWithSpaces = "  PROD002  ";
-		String expectedProductCode = "PROD002"; // After trimming
+		String productCodeWithSpaces = " PROD002 ";
+		String expectedProductCode = "PROD002";
 		int quantity = 50;
 		LocalDate purchaseDate = LocalDate.now().minusDays(10);
 		LocalDate expiryDate = LocalDate.now().plusMonths(3);
@@ -87,37 +82,30 @@ class ReceiveStockCommandTest {
 
 		doNothing().when(inventoryManager).receiveStock(expectedProductCode, purchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
 		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(expectedProductCode, purchaseDate, expiryDate, quantity);
-		assertTrue(outContent.toString().contains("Product code:")); // General prompt check
+		assertTrue(outContent.toString().contains("Product code:"));
 	}
 
 	@Test
 	@DisplayName("Should re-prompt for product code if initial inputs are empty, then succeed")
 	void shouldRepromptMultipleTimesForEmptyProductCode() {
-		// Arrange
 		String productCode = "PROD003";
 		int quantity = 30;
 		LocalDate purchaseDate = LocalDate.now().minusDays(2);
 		LocalDate expiryDate = LocalDate.now().plusMonths(1);
 
-		when(scanner.nextLine()).thenReturn("") // Empty 1
-				.thenReturn("   ") // Spaces only (empty after trim)
-				.thenReturn(productCode) // Valid
+		when(scanner.nextLine()).thenReturn("").thenReturn("   ").thenReturn(productCode)
 				.thenReturn(String.valueOf(quantity)).thenReturn(purchaseDate.toString())
 				.thenReturn(expiryDate.toString());
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
-		verify(scanner, times(6)).nextLine(); // 2 empty + valid code + qty + PD + ED
+		verify(scanner, times(6)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
 		String output = outContent.toString();
@@ -128,9 +116,8 @@ class ReceiveStockCommandTest {
 	@Test
 	@DisplayName("Should handle quantity input with leading/trailing spaces correctly")
 	void shouldHandleQuantityWithSpaces() {
-		// Arrange
 		String productCode = "PROD004";
-		String quantityWithSpaces = "  75   ";
+		String quantityWithSpaces = " 75 ";
 		int expectedQuantity = 75;
 		LocalDate purchaseDate = LocalDate.now().minusWeeks(1);
 		LocalDate expiryDate = LocalDate.now().plusMonths(2);
@@ -140,37 +127,30 @@ class ReceiveStockCommandTest {
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, expiryDate, expectedQuantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
 		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, expectedQuantity);
-		assertTrue(outContent.toString().contains("Quantity:")); // General prompt check
+		assertTrue(outContent.toString().contains("Quantity:"));
 	}
 
 	@Test
 	@DisplayName("Should re-prompt for quantity if initial inputs are invalid, then succeed")
 	void shouldRepromptMultipleTimesForInvalidQuantity() {
-		// Arrange
 		String productCode = "PROD005";
 		int quantity = 10;
 		LocalDate purchaseDate = LocalDate.now().minusDays(1);
 		LocalDate expiryDate = LocalDate.now().plusMonths(1);
 
-		when(scanner.nextLine()).thenReturn(productCode).thenReturn("not_a_number") // Invalid 1: non-numeric
-				.thenReturn("-5") // Invalid 2: negative
-				.thenReturn("0") // Invalid 3: zero
-				.thenReturn(String.valueOf(quantity)) // Valid
-				.thenReturn(purchaseDate.toString()).thenReturn(expiryDate.toString());
+		when(scanner.nextLine()).thenReturn(productCode).thenReturn("not_a_number").thenReturn("-5").thenReturn("0")
+				.thenReturn(String.valueOf(quantity)).thenReturn(purchaseDate.toString())
+				.thenReturn(expiryDate.toString());
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
-		verify(scanner, times(7)).nextLine(); // Code + 3 invalid qty + valid qty + PD + ED
+		verify(scanner, times(7)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
 		String output = outContent.toString();
@@ -185,10 +165,9 @@ class ReceiveStockCommandTest {
 	@Test
 	@DisplayName("Should handle purchase date input with leading/trailing spaces correctly")
 	void shouldHandlePurchaseDateWithSpaces() {
-		// Arrange
 		String productCode = "PROD006";
 		int quantity = 20;
-		String purchaseDateWithSpaces = "  " + LocalDate.now().minusDays(15).toString() + "  ";
+		String purchaseDateWithSpaces = " " + LocalDate.now().minusDays(15).toString() + " ";
 		LocalDate expectedPurchaseDate = LocalDate.now().minusDays(15);
 		LocalDate expiryDate = LocalDate.now().plusMonths(4);
 
@@ -197,39 +176,29 @@ class ReceiveStockCommandTest {
 
 		doNothing().when(inventoryManager).receiveStock(productCode, expectedPurchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
 		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, expectedPurchaseDate, expiryDate, quantity);
-		assertTrue(outContent.toString().contains("Purchase date (YYYY-MM-DD):")); // General prompt check
+		assertTrue(outContent.toString().contains("Purchase date (YYYY-MM-DD):"));
 	}
 
 	@Test
 	@DisplayName("Should re-prompt for purchase date if initial inputs are invalid format, then succeed")
 	void shouldRepromptMultipleTimesForInvalidPurchaseDateFormat() {
-		// Arrange
 		String productCode = "PROD007";
 		int quantity = 40;
 		LocalDate purchaseDate = LocalDate.now().minusDays(3);
 		LocalDate expiryDate = LocalDate.now().plusMonths(5);
 
-		when(scanner.nextLine()).thenReturn(productCode).thenReturn(String.valueOf(quantity)).thenReturn("2024/01/01") // Invalid
-																														// 1:
-																														// wrong
-																														// format
-				.thenReturn("not_a_date") // Invalid 2: non-date string
-				.thenReturn(purchaseDate.toString()) // Valid
-				.thenReturn(expiryDate.toString());
+		when(scanner.nextLine()).thenReturn(productCode).thenReturn(String.valueOf(quantity)).thenReturn("2024/01/01")
+				.thenReturn("not_a_date").thenReturn(purchaseDate.toString()).thenReturn(expiryDate.toString());
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
-		verify(scanner, times(6)).nextLine(); // Code + Qty + 2 invalid PD + valid PD + ED
+		verify(scanner, times(6)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
 		String output = outContent.toString();
@@ -242,11 +211,10 @@ class ReceiveStockCommandTest {
 	@Test
 	@DisplayName("Should handle expiry date input with leading/trailing spaces correctly")
 	void shouldHandleExpiryDateWithSpaces() {
-		// Arrange
 		String productCode = "PROD008";
 		int quantity = 60;
 		LocalDate purchaseDate = LocalDate.now().minusDays(20);
-		String expiryDateWithSpaces = "  " + LocalDate.now().plusMonths(6).toString() + "  ";
+		String expiryDateWithSpaces = " " + LocalDate.now().plusMonths(6).toString() + " ";
 		LocalDate expectedExpiryDate = LocalDate.now().plusMonths(6);
 
 		when(scanner.nextLine()).thenReturn(productCode).thenReturn(String.valueOf(quantity))
@@ -254,36 +222,30 @@ class ReceiveStockCommandTest {
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, expectedExpiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
 		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expectedExpiryDate, quantity);
-		assertTrue(outContent.toString().contains("Expiry date (YYYY-MM-DD):")); // General prompt check
+		assertTrue(outContent.toString().contains("Expiry date (YYYY-MM-DD):"));
 	}
 
 	@Test
 	@DisplayName("Should re-prompt for expiry date if initial inputs are invalid format, then succeed")
 	void shouldRepromptMultipleTimesForInvalidExpiryDateFormat() {
-		// Arrange
 		String productCode = "PROD009";
 		int quantity = 25;
 		LocalDate purchaseDate = LocalDate.now().minusDays(7);
 		LocalDate expiryDate = LocalDate.now().plusMonths(1);
 
 		when(scanner.nextLine()).thenReturn(productCode).thenReturn(String.valueOf(quantity))
-				.thenReturn(purchaseDate.toString()).thenReturn("2024-1-1") // Invalid 1: wrong format
-				.thenReturn("not_a_date_at_all") // Invalid 2: non-date string
-				.thenReturn(expiryDate.toString()); // Valid
+				.thenReturn(purchaseDate.toString()).thenReturn("2024-1-1").thenReturn("not_a_date_at_all")
+				.thenReturn(expiryDate.toString());
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
-		verify(scanner, times(6)).nextLine(); // Code + Qty + PD + 2 invalid ED + valid ED
+		verify(scanner, times(6)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
 		String output = outContent.toString();
@@ -296,25 +258,21 @@ class ReceiveStockCommandTest {
 	@Test
 	@DisplayName("Should re-prompt for expiry date if it is before purchase date, then succeed")
 	void shouldRepromptForExpiryDateBeforePurchaseDate() {
-		// Arrange
 		String productCode = "PROD010";
 		int quantity = 15;
-		LocalDate purchaseDate = LocalDate.now().minusDays(10); // Purchase 10 days ago
-		LocalDate invalidExpiryDate = purchaseDate.minusDays(1); // Expiry before purchase
-		LocalDate validExpiryDate = LocalDate.now().plusMonths(1); // Valid expiry
+		LocalDate purchaseDate = LocalDate.now().minusDays(10);
+		LocalDate invalidExpiryDate = purchaseDate.minusDays(1);
+		LocalDate validExpiryDate = LocalDate.now().plusMonths(1);
 
 		when(scanner.nextLine()).thenReturn(productCode).thenReturn(String.valueOf(quantity))
-				.thenReturn(purchaseDate.toString()).thenReturn(invalidExpiryDate.toString()) // First ED input: before
-																								// PD
-				.thenReturn(validExpiryDate.toString()); // Second ED input: valid
+				.thenReturn(purchaseDate.toString()).thenReturn(invalidExpiryDate.toString())
+				.thenReturn(validExpiryDate.toString());
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseDate, validExpiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
-		verify(scanner, times(5)).nextLine(); // Code + Qty + PD + invalid ED + valid ED
+		verify(scanner, times(5)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, validExpiryDate, quantity);
 
 		String output = outContent.toString();
@@ -327,33 +285,26 @@ class ReceiveStockCommandTest {
 	@Test
 	@DisplayName("Should allow expiry date to be the same as purchase date")
 	void shouldAllowExpiryDateSameAsPurchaseDate() {
-		// Arrange
 		String productCode = "PROD011";
 		int quantity = 5;
-		LocalDate purchaseAndExpiryDate = LocalDate.now(); // Same date
+		LocalDate purchaseAndExpiryDate = LocalDate.now();
 
 		when(scanner.nextLine()).thenReturn(productCode).thenReturn(String.valueOf(quantity))
-				.thenReturn(purchaseAndExpiryDate.toString()).thenReturn(purchaseAndExpiryDate.toString()); // Expiry is
-																											// same as
-																											// purchase
+				.thenReturn(purchaseAndExpiryDate.toString()).thenReturn(purchaseAndExpiryDate.toString());
 
 		doNothing().when(inventoryManager).receiveStock(productCode, purchaseAndExpiryDate, purchaseAndExpiryDate,
 				quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
 		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseAndExpiryDate, purchaseAndExpiryDate,
 				quantity);
-		// No error messages expected
 	}
 
 	@Test
 	@DisplayName("Should handle IllegalArgumentException from InventoryManager")
 	void shouldHandleIllegalArgumentException() {
-		// Arrange
 		String productCode = "PROD012";
 		int quantity = 1;
 		LocalDate purchaseDate = LocalDate.now();
@@ -366,10 +317,8 @@ class ReceiveStockCommandTest {
 		doThrow(new IllegalArgumentException(errorMessage)).when(inventoryManager).receiveStock(productCode,
 				purchaseDate, expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
 		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
@@ -381,7 +330,6 @@ class ReceiveStockCommandTest {
 	@Test
 	@DisplayName("Should handle generic RuntimeException from InventoryManager")
 	void shouldHandleGenericRuntimeException() {
-		// Arrange
 		String productCode = "PROD013";
 		int quantity = 2;
 		LocalDate purchaseDate = LocalDate.now();
@@ -394,18 +342,13 @@ class ReceiveStockCommandTest {
 		doThrow(new RuntimeException(errorMessage)).when(inventoryManager).receiveStock(productCode, purchaseDate,
 				expiryDate, quantity);
 
-		// Act
 		receiveStockCommand.execute();
 
-		// Assert
 		verify(scanner, times(4)).nextLine();
 		verify(inventoryManager, times(1)).receiveStock(productCode, purchaseDate, expiryDate, quantity);
 
 		String output = outContent.toString();
 		assertTrue(output.contains("An unexpected error occurred: " + errorMessage),
 				"Should display generic unexpected error message.");
-		// The e.printStackTrace() call from the command will also be captured, leading
-		// to more output.
-		// For production, you might remove printStackTrace for cleaner logs.
 	}
 }

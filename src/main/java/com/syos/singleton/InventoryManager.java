@@ -41,8 +41,8 @@ public class InventoryManager {
 		instance = null;
 	}
 
-	public void addObserver(StockObserver obs) {
-		observers.add(obs);
+	public void addObserver(StockObserver stockObserver) {
+		observers.add(stockObserver);
 	}
 
 	protected void notifyLow(String code, int remaining) {
@@ -106,7 +106,7 @@ public class InventoryManager {
 			chosenBackStoreBatch.setQuantityRemaining(availableInBackStoreBatch - usedFromBackStoreBatch);
 			batchRepository.updateQuantity(chosenBackStoreBatch.getId(), chosenBackStoreBatch.getQuantityRemaining());
 
-			shelfRepository.upsertBatchQuantityOnShelf(productCode, chosenBackStoreBatch.getId(),
+			shelfRepository.updateBatchQuantityOnShelf(productCode, chosenBackStoreBatch.getId(),
 					usedFromBackStoreBatch, chosenBackStoreBatch.getExpiryDate());
 			System.out.printf("Moved %d units from back-store batch %d to shelf for %s.%n", usedFromBackStoreBatch,
 					chosenBackStoreBatch.getId(), productCode);
@@ -127,27 +127,21 @@ public class InventoryManager {
 		if (quantity <= 0) {
 			throw new IllegalArgumentException("Quantity to deduct must be positive.");
 		}
-
 		int currentShelfQuantity = shelfRepository.getQuantity(productCode);
 		if (currentShelfQuantity < quantity) {
 			throw new IllegalArgumentException(
 					String.format("Insufficient stock on shelf for %s. Available: %d, Requested: %d.", productCode,
 							currentShelfQuantity, quantity));
 		}
-
 		int remainingToDeduct = quantity;
 		List<ShelfStock> shelfBatches = shelfRepository.getBatchesOnShelf(productCode);
-
 		while (remainingToDeduct > 0 && !shelfBatches.isEmpty()) {
 			ShelfStock chosenShelfBatch = strategy.selectBatchFromShelf(shelfBatches);
-
 			if (chosenShelfBatch == null) {
 				throw new IllegalStateException("Shelf strategy returned null batch unexpectedly during deduction.");
 			}
-
 			int availableInShelfBatch = chosenShelfBatch.getQuantity();
 			int usedFromShelfBatch = Math.min(availableInShelfBatch, remainingToDeduct);
-
 			shelfRepository.deductQuantityFromBatchOnShelf(productCode, chosenShelfBatch.getBatchId(),
 					usedFromShelfBatch);
 			System.out.printf("Deducted %d units from shelf batch %d for %s.%n", usedFromShelfBatch,
@@ -156,7 +150,6 @@ public class InventoryManager {
 			chosenShelfBatch.setQuantity(availableInShelfBatch - usedFromShelfBatch);
 
 			remainingToDeduct -= usedFromShelfBatch;
-
 			if (chosenShelfBatch.getQuantity() == 0) {
 				shelfBatches.remove(chosenShelfBatch);
 				shelfRepository.removeBatchFromShelf(productCode, chosenShelfBatch.getBatchId());
