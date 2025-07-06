@@ -64,7 +64,7 @@ class BillBuilderTest {
 	void withCashTendered_insufficientCash_throwsException() {
 		Bill.BillBuilder builder = new Bill.BillBuilder(1005, validTestItems);
 		IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-				() -> builder.withCashTendered(30.0), "Should throw IllegalArgumentException for insufficient cash");
+				() -> builder.withCashTendered(30.0));
 		assertEquals("Cash tendered must cover total", thrown.getMessage());
 		assertEquals(0.0, (Double) getValue(builder, "cashTendered"), DELTA);
 	}
@@ -73,10 +73,10 @@ class BillBuilderTest {
 	@DisplayName("withTransactionType should set the transaction type correctly")
 	void withTransactionType_validType_setsValue() {
 		Bill.BillBuilder builder = new Bill.BillBuilder(1006, validTestItems);
-		Bill.BillBuilder resultBuilder = builder.withTransactionType("CREDIT_CARD");
+		Bill.BillBuilder resultBuilder = builder.withTransactionType("CASH");
 
 		assertSame(builder, resultBuilder, "Should return the same builder instance for chaining");
-		assertEquals("CREDIT_CARD", getValue(builder, "transactionType"));
+		assertEquals("CASH", getValue(builder, "transactionType"));
 	}
 
 	@Test
@@ -84,8 +84,7 @@ class BillBuilderTest {
 	void withTransactionType_nullType_throwsException() {
 		Bill.BillBuilder builder = new Bill.BillBuilder(1007, validTestItems);
 		IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-				() -> builder.withTransactionType(null),
-				"Should throw IllegalArgumentException for null transaction type");
+				() -> builder.withTransactionType(null));
 		assertEquals("Transaction type cannot be empty", thrown.getMessage());
 		assertEquals("COUNTER", getValue(builder, "transactionType"));
 	}
@@ -95,8 +94,7 @@ class BillBuilderTest {
 	void withTransactionType_blankType_throwsException() {
 		Bill.BillBuilder builder = new Bill.BillBuilder(1008, validTestItems);
 		IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-				() -> builder.withTransactionType("   "),
-				"Should throw IllegalArgumentException for blank transaction type");
+				() -> builder.withTransactionType("   "));
 		assertEquals("Transaction type cannot be empty", thrown.getMessage());
 		assertEquals("COUNTER", getValue(builder, "transactionType"));
 	}
@@ -106,20 +104,20 @@ class BillBuilderTest {
 	void build_validBuilder_createsBill() {
 		Bill.BillBuilder builder = new Bill.BillBuilder(1009, validTestItems);
 		builder.withCashTendered(50.0);
-		builder.withTransactionType("MOBILE_PAYMENT");
+		builder.withTransactionType("CASH");
 
 		Bill bill = builder.build();
 
-		assertNotNull(bill, "Build method should return a non-null Bill object");
-		assertEquals(1009, bill.getSerialNumber(), "Bill serial number should match builder");
-		assertEquals(35.0, bill.getTotalAmount(), DELTA, "Bill total amount should match builder's calculated total");
-		assertEquals(50.0, bill.getCashTendered(), DELTA, "Bill cash tendered should match builder");
-		assertEquals(15.0, bill.getChangeReturned(), DELTA, "Bill change returned should be calculated correctly");
-		assertEquals("MOBILE_PAYMENT", bill.getTransactionType(), "Bill transaction type should match builder");
-		assertNotNull(bill.getBillDate(), "Bill date should be set");
-		assertFalse(bill.getItems().isEmpty(), "Bill items should not be empty");
+		assertNotNull(bill);
+		assertEquals(1009, bill.getSerialNumber());
+		assertEquals(35.0, bill.getTotalAmount(), DELTA);
+		assertEquals(50.0, bill.getCashTendered(), DELTA);
+		assertEquals(15.0, bill.getChangeReturned(), DELTA);
+		assertEquals("CASH", bill.getTransactionType());
+		assertNotNull(bill.getBillDate());
+		assertFalse(bill.getItems().isEmpty());
 		assertEquals(2, bill.getItems().size());
-		assertTrue(bill.getItems().containsAll(validTestItems), "Bill should contain the items from the builder");
+		assertTrue(bill.getItems().containsAll(validTestItems));
 	}
 
 	@Test
@@ -127,8 +125,7 @@ class BillBuilderTest {
 	void build_cashTenderedZero_throwsException() {
 		Bill.BillBuilder builder = new Bill.BillBuilder(1010, validTestItems);
 
-		IllegalStateException thrown = assertThrows(IllegalStateException.class, builder::build,
-				"Should throw IllegalStateException if cashTendered is zero");
+		IllegalStateException thrown = assertThrows(IllegalStateException.class, builder::build);
 		assertEquals("Must set cashTendered", thrown.getMessage());
 	}
 
